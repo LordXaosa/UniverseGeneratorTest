@@ -39,6 +39,33 @@
             <param name="Comparer">Will be used to compare added elements for sort and search operations.</param>
             <param name="Capacity">Capacity of the list (<see cref="P:System.Collections.ArrayList.Capacity">ArrayList.Capacity</see>)</param>
         </member>
+        <member name="P:EMK.Collections.SortableList.IsSorted">
+            <summary>
+            'Get only' property that indicates if the list is sorted.
+            </summary>
+        </member>
+        <member name="P:EMK.Collections.SortableList.KeepSorted">
+            <summary>
+            Get : Indicates if the list must be kept sorted from now on.
+            Set : Tells the list if it must stay sorted or not. Impossible to set to true if the list is not sorted.
+            <see cref="P:EMK.Collections.SortableList.KeepSorted">KeepSorted</see>==true implies that <see cref="P:EMK.Collections.SortableList.IsSorted">IsSorted</see>==true
+            </summary>
+            <exception cref="T:System.InvalidOperationException">Cannot be set to true if the list is not sorted yet.</exception>
+        </member>
+        <member name="P:EMK.Collections.SortableList.AddDuplicates">
+            <summary>
+            If set to true, it will not be possible to add an object to the list if its value is already in the list.
+            </summary>
+        </member>
+        <member name="P:EMK.Collections.SortableList.Item(System.Int32)">
+            <summary>
+            IList implementation.
+            Gets - or sets - object's value at a specified index.
+            The set operation is impossible if the <see cref="P:EMK.Collections.SortableList.KeepSorted">KeepSorted</see> property is set to true.
+            </summary>
+            <exception cref="T:System.ArgumentOutOfRangeException">Index is less than zero or Index is greater than Count.</exception>
+            <exception cref="T:System.InvalidOperationException">[] operator cannot be used to set a value if KeepSorted property is set to true.</exception>
+        </member>
         <member name="M:EMK.Collections.SortableList.Add(System.Object)">
             <summary>
             IList implementation.
@@ -71,6 +98,18 @@
             If the object has been found, a positive integer corresponding to its position.
             If the objects has not been found, a negative integer which is the bitwise complement of the index of the next element.
             </returns>
+        </member>
+        <member name="P:EMK.Collections.SortableList.IsFixedSize">
+            <summary>
+            IList implementation.
+            Idem <see cref="T:System.Collections.ArrayList">ArrayList</see>
+            </summary>
+        </member>
+        <member name="P:EMK.Collections.SortableList.IsReadOnly">
+            <summary>
+            IList implementation.
+            Idem <see cref="T:System.Collections.ArrayList">ArrayList</see>
+            </summary>
         </member>
         <member name="M:EMK.Collections.SortableList.Clear">
             <summary>
@@ -112,6 +151,24 @@
             <param name="array"></param>
             <param name="arrayIndex"></param>
         </member>
+        <member name="P:EMK.Collections.SortableList.Count">
+            <summary>
+            IList.ICollection implementation.
+            Idem <see cref="T:System.Collections.ArrayList">ArrayList</see>
+            </summary>
+        </member>
+        <member name="P:EMK.Collections.SortableList.IsSynchronized">
+            <summary>
+            IList.ICollection implementation.
+            Idem <see cref="T:System.Collections.ArrayList">ArrayList</see>
+            </summary>
+        </member>
+        <member name="P:EMK.Collections.SortableList.SyncRoot">
+            <summary>
+            IList.ICollection implementation.
+            Idem <see cref="T:System.Collections.ArrayList">ArrayList</see>
+            </summary>
+        </member>
         <member name="M:EMK.Collections.SortableList.GetEnumerator">
             <summary>
             IList.IEnumerable implementation.
@@ -134,6 +191,11 @@
             <param name="Start">The index for start position.</param>
             <returns></returns>
         </member>
+        <member name="T:EMK.Collections.SortableList.Equality">
+            <summary>
+            Defines an equality for two objects
+            </summary>
+        </member>
         <member name="M:EMK.Collections.SortableList.IndexOf(System.Object,EMK.Collections.SortableList.Equality)">
             <summary>
             Idem IndexOf(object), but with a specified equality function
@@ -150,6 +212,11 @@
             <param name="Start">The index for start position.</param>
             <param name="AreEqual">Equality function to use for the search.</param>
             <returns></returns>
+        </member>
+        <member name="P:EMK.Collections.SortableList.Capacity">
+            <summary>
+            Idem <see cref="T:System.Collections.ArrayList">ArrayList</see>
+            </summary>
         </member>
         <member name="M:EMK.Collections.SortableList.ToString">
             <summary>
@@ -222,73 +289,6 @@
             Returns the object of the list whose value is maximum
             </summary>
             <returns>The maximum object in the list</returns>
-        </member>
-        <member name="P:EMK.Collections.SortableList.IsSorted">
-            <summary>
-            'Get only' property that indicates if the list is sorted.
-            </summary>
-        </member>
-        <member name="P:EMK.Collections.SortableList.KeepSorted">
-            <summary>
-            Get : Indicates if the list must be kept sorted from now on.
-            Set : Tells the list if it must stay sorted or not. Impossible to set to true if the list is not sorted.
-            <see cref="P:EMK.Collections.SortableList.KeepSorted">KeepSorted</see>==true implies that <see cref="P:EMK.Collections.SortableList.IsSorted">IsSorted</see>==true
-            </summary>
-            <exception cref="T:System.InvalidOperationException">Cannot be set to true if the list is not sorted yet.</exception>
-        </member>
-        <member name="P:EMK.Collections.SortableList.AddDuplicates">
-            <summary>
-            If set to true, it will not be possible to add an object to the list if its value is already in the list.
-            </summary>
-        </member>
-        <member name="P:EMK.Collections.SortableList.Item(System.Int32)">
-            <summary>
-            IList implementation.
-            Gets - or sets - object's value at a specified index.
-            The set operation is impossible if the <see cref="P:EMK.Collections.SortableList.KeepSorted">KeepSorted</see> property is set to true.
-            </summary>
-            <exception cref="T:System.ArgumentOutOfRangeException">Index is less than zero or Index is greater than Count.</exception>
-            <exception cref="T:System.InvalidOperationException">[] operator cannot be used to set a value if KeepSorted property is set to true.</exception>
-        </member>
-        <member name="P:EMK.Collections.SortableList.IsFixedSize">
-            <summary>
-            IList implementation.
-            Idem <see cref="T:System.Collections.ArrayList">ArrayList</see>
-            </summary>
-        </member>
-        <member name="P:EMK.Collections.SortableList.IsReadOnly">
-            <summary>
-            IList implementation.
-            Idem <see cref="T:System.Collections.ArrayList">ArrayList</see>
-            </summary>
-        </member>
-        <member name="P:EMK.Collections.SortableList.Count">
-            <summary>
-            IList.ICollection implementation.
-            Idem <see cref="T:System.Collections.ArrayList">ArrayList</see>
-            </summary>
-        </member>
-        <member name="P:EMK.Collections.SortableList.IsSynchronized">
-            <summary>
-            IList.ICollection implementation.
-            Idem <see cref="T:System.Collections.ArrayList">ArrayList</see>
-            </summary>
-        </member>
-        <member name="P:EMK.Collections.SortableList.SyncRoot">
-            <summary>
-            IList.ICollection implementation.
-            Idem <see cref="T:System.Collections.ArrayList">ArrayList</see>
-            </summary>
-        </member>
-        <member name="P:EMK.Collections.SortableList.Capacity">
-            <summary>
-            Idem <see cref="T:System.Collections.ArrayList">ArrayList</see>
-            </summary>
-        </member>
-        <member name="T:EMK.Collections.SortableList.Equality">
-            <summary>
-            Defines an equality for two objects
-            </summary>
         </member>
     </members>
 </doc>

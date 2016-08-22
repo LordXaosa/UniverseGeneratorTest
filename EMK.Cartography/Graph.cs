@@ -24,18 +24,22 @@ namespace EMK.Cartography
 	public class Graph
 	{
 		List<Node> LN;
-	    HashSet<Node> LNH;
+        //HashSet<Node> LNH;
+        Dictionary<Point3D, Node> NodesDict;
         List<Arc> LA;
+        //Dictionary<Point3D, Arc> ArcsDict;
         HashSet<Arc> LAH;
-		/// <summary>
-		/// Constructor.
-		/// </summary>
-		public Graph()
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        public Graph()
 		{
             LN = new List<Node>();
             LA = new List<Arc>();
-            LNH = new HashSet<Node>();
+            //LNH = new HashSet<Node>();
             LAH = new HashSet<Arc>();
+            NodesDict = new Dictionary<Point3D, Node>();
+            //ArcsDict = new Dictionary<Point3D, Arc>();
 		}
 
 		/// <summary>
@@ -48,6 +52,8 @@ namespace EMK.Cartography
 		/// </summary>
         public List<Arc> Arcs { get { return LA; } }
 
+        public Dictionary<Point3D, Node> NodesDictionary { get { return NodesDict; } }
+
 		/// <summary>
 		/// Empties the graph.
 		/// </summary>
@@ -55,7 +61,9 @@ namespace EMK.Cartography
 		{
 			LN.Clear();
 			LA.Clear();
-            LNH.Clear();
+            NodesDict.Clear();
+            //ArcsDict.Clear();
+            //LNH.Clear();
             LAH.Clear();
 		}
 
@@ -66,9 +74,11 @@ namespace EMK.Cartography
 		/// <returns>'true' if it has actually been added / 'false' if the node is null or if it is already in the graph.</returns>
 		public bool AddNode(Node NewNode)
 		{
-		    if (LNH.Add(NewNode))
+		    //if (LNH.Add(NewNode))
+            if(!NodesDict.ContainsKey(NewNode.Position))
 		    {
-		        LN.Add(NewNode);
+                NodesDict.Add(NewNode.Position, NewNode);
+                LN.Add(NewNode);
                 return true;
 		    }
             return false;
@@ -95,20 +105,11 @@ namespace EMK.Cartography
 		/// <returns>'true' if it has actually been added / 'false' if the arc is null or if it is already in the graph.</returns>
 		public bool AddArc(Arc NewArc)
 		{
-			/*if (LAH.Contains(NewArc)) return false;
-			if ( !LNH.Contains(NewArc.StartNode) || !LNH.Contains(NewArc.EndNode) )
-				throw new ArgumentException("Cannot add an arc if one of its extremity nodes does not belong to the graph.");*/
-		    /*try
-		    {*/
 		    if (LAH.Add(NewArc))
 		    {
 		        LA.Add(NewArc);
                 return true;
 		    }
-
-		    /*}
-            catch{}*/
-		    
 			return false;
 		}
 
@@ -162,7 +163,8 @@ namespace EMK.Cartography
                     LAH.Remove(A);
 				}
 				LN.Remove(NodeToRemove);
-                LNH.Remove(NodeToRemove);
+                //LNH.Remove(NodeToRemove);
+                NodesDict.Remove(NodeToRemove.Position);
 			}
 			catch { return false; }
 			return true;

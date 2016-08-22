@@ -58,8 +58,6 @@ namespace UniverseGeneratorTest
             get
             {
                 //get a random token somewhere in middle of sample word    
-                StringBuilder sb = new StringBuilder();
-                
                 string s = "";
                 do
                 {
@@ -111,7 +109,7 @@ namespace UniverseGeneratorTest
         //private members
         private Dictionary<string, List<char>> _chains = new Dictionary<string, List<char>>();
         private List<string> _samples = new List<string>();
-        private List<string> _used = new List<string>();
+        private HashSet<string> _used = new HashSet<string>();
         private Random _rnd = new Random(216573);
         private int _order;
         private int _minLength;

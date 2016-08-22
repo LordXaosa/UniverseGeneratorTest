@@ -12,6 +12,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using EMK.Cartography;
+using EMK.LightGeometry;
+using System.Collections.Concurrent;
 
 namespace UniverseGeneratorTest
 {
@@ -21,8 +23,10 @@ namespace UniverseGeneratorTest
         {
             InitializeComponent();
         }
-        List<Sector> universe = new List<Sector>();
-        HashSet<Sector> universeHashSet = new HashSet<Sector>();
+        /*List<Sector> universe = new List<Sector>();
+        HashSet<Sector> universeHashSet = new HashSet<Sector>();*/
+        Dictionary<Point3D, Sector> universe = new Dictionary<Point3D, Sector>();
+        //ConcurrentDictionary<Point3D, Sector> universe = new ConcurrentDictionary<Point3D, Sector>();
 
         Bitmap img = new Bitmap(1000, 1000);
 
@@ -44,134 +48,134 @@ namespace UniverseGeneratorTest
                 PerlinNoise noise = new PerlinNoise(8973454);
                 ng.Reset();
                 universe.Clear();
-                universeHashSet.Clear();
+                //universeHashSet.Clear();
                 //bool[,] generated = new bool[1000, 1000];
                 Queue<Sector> queue = new Queue<Sector>();
-
+                //ConcurrentQueue<Sector> queue = new ConcurrentQueue<Sector>();
+                Graph graph = new Graph();
                 if (universe.Count == 0)
                 {
-                    Sector s = new Sector() {X = 0, Y = 0, Name = ng.NextName};
-                    universe.Add(s);
-                    universeHashSet.Add(s);
+                    Point3D pos = new Point3D(0, 0, 0);
+                    Sector s = new Sector(pos, ng.NextName);// {X = 0, Y = 0, Name = ng.NextName};
+                    universe.Add(pos, s);
+                    //universe.TryAdd(pos, s);
+                    Node n = new Node(pos);
+                    graph.AddNode(n);
+                    //universeHashSet.Add(s);
                     queue.Enqueue(s);
                 }
                 int cycles = int.Parse(cyclesTb.Text);
                 for (int i = 0; i < cycles; i++)
-                    //Parallel.For(0, cycles, (i) =>
+                //Parallel.For(0, cycles, (i) =>
                 {
                     if (queue.Count > 0)
                     {
+                        Arc arc;
+                        Node n;
                         Sector sector = queue.Dequeue();
-                        var v = GetSector(noise, sector.X, sector.Y-1);
+                        var v = GetSector(noise, sector.X, sector.Y - 1);
+                        Node currentNode = graph.NodesDictionary[sector.Position];
                         //if (rnd.Next(100) < chance)
                         if (v > chanced)
                         {
-                            Sector north = new Sector()
-                            {
-                                X = sector.X,
-                                Y = sector.Y - 1,
-                                SouthGate = sector,
-                                Name = ng.NextName
-                            };
-                            if (universeHashSet.Add(north))
+                            Point3D npos = new Point3D(sector.X, sector.Y - 1, 0);
+                            Sector north = new Sector(npos, ng.NextName, south: sector);
+                            if (!universe.ContainsKey(npos))
                             {
                                 RandomDangerLever(north);
                                 sector.NorthGate = north;
                                 queue.Enqueue(north);
-                                universe.Add(north);
+                                universe.Add(npos, north);
+                                n = new Node(npos);
+                                graph.AddNode(n);
+                                arc = new Arc(currentNode, n, avoidDanger ? sector.NorthGate.DangerLevel : 1);
+                                graph.AddArc(arc);
+                                arc = new Arc(n, currentNode, avoidDanger ? sector.DangerLevel : 1);
+                                graph.AddArc(arc);
                             }
                             else
                             {
-                                north = universe.FirstOrDefault(p => p.X == sector.X && p.Y == sector.Y - 1);
-                                if (north != null)
-                                {
-                                    sector.NorthGate = north;
-                                    north.SouthGate = sector;
-                                }
+                                north = universe[npos];
+                                sector.NorthGate = north;
+                                north.SouthGate = sector;
                             }
                         }
                         //if (rnd.Next(100) < chance)
                         v = GetSector(noise, sector.X, sector.Y + 1);
                         if (v > chanced)
                         {
-                            Sector south = new Sector()
-                            {
-                                X = sector.X,
-                                Y = sector.Y + 1,
-                                NorthGate = sector,
-                                Name = ng.NextName
-                            };
-                            if (universeHashSet.Add(south))
+                            Point3D spos = new Point3D(sector.Position.X, sector.Position.Y + 1, 0);
+                            Sector south = new Sector(spos, ng.NextName, north: sector);
+                            if (!universe.ContainsKey(spos))
                             {
                                 RandomDangerLever(south);
                                 sector.SouthGate = south;
                                 queue.Enqueue(south);
-                                universe.Add(south);
+                                universe.Add(spos, south);
+                                n = new Node(spos);
+                                graph.AddNode(n);
+                                arc = new Arc(currentNode, n, avoidDanger ? sector.SouthGate.DangerLevel : 1);
+                                graph.AddArc(arc);
+                                arc = new Arc(n, currentNode, avoidDanger ? sector.DangerLevel : 1);
+                                graph.AddArc(arc);
                             }
                             else
                             {
-                                south = universe.FirstOrDefault(p => p.X == sector.X && p.Y == sector.Y + 1);
-                                if (south != null)
-                                {
-                                    sector.SouthGate = south;
-                                    south.NorthGate = sector;
-                                }
+                                south = universe[spos];
+                                sector.SouthGate = south;
+                                south.NorthGate = sector;
                             }
                         }
                         //if (rnd.Next(100) < chance)
                         v = GetSector(noise, sector.X - 1, sector.Y);
                         if (v > chanced)
                         {
-                            Sector west = new Sector()
-                            {
-                                X = sector.X - 1,
-                                Y = sector.Y,
-                                EastGate = sector,
-                                Name = ng.NextName
-                            };
-                            if (universeHashSet.Add(west))
+                            Point3D wpos = new Point3D(sector.Position.X - 1, sector.Position.Y, 0);
+                            Sector west = new Sector(wpos, ng.NextName, east: sector);
+                            if (!universe.ContainsKey(wpos))
                             {
                                 RandomDangerLever(west);
                                 sector.WestGate = west;
                                 queue.Enqueue(west);
-                                universe.Add(west);
+                                universe.Add(wpos, west);
+                                n = new Node(wpos);
+                                graph.AddNode(n);
+                                arc = new Arc(currentNode, n, avoidDanger ? sector.WestGate.DangerLevel : 1);
+                                graph.AddArc(arc);
+                                arc = new Arc(n, currentNode, avoidDanger ? sector.DangerLevel : 1);
+                                graph.AddArc(arc);
                             }
                             else
                             {
-                                west = universe.FirstOrDefault(p => p.X == sector.X - 1 && p.Y == sector.Y);
-                                if (west != null)
-                                {
-                                    sector.WestGate = west;
-                                    west.EastGate = sector;
-                                }
+                                west = universe[wpos];
+                                sector.WestGate = west;
+                                west.EastGate = sector;
                             }
                         }
                         //if (rnd.Next(100) < chance)
                         v = GetSector(noise, sector.X + 1, sector.Y);
                         if (v > chanced)
                         {
-                            Sector east = new Sector()
-                            {
-                                X = sector.X + 1,
-                                Y = sector.Y,
-                                WestGate = sector,
-                                Name = ng.NextName
-                            };
-                            if (universeHashSet.Add(east))
+                            Point3D epos = new Point3D(sector.Position.X + 1, sector.Position.Y, 0);
+                            Sector east = new Sector(epos, ng.NextName, west: sector);
+                            if (!universe.ContainsKey(epos))
                             {
                                 RandomDangerLever(east);
                                 sector.EastGate = east;
                                 queue.Enqueue(east);
-                                universe.Add(east);
+                                universe.Add(epos, east);
+                                n = new Node(epos);
+                                graph.AddNode(n);
+                                arc = new Arc(currentNode, n, avoidDanger ? sector.EastGate.DangerLevel : 1);
+                                graph.AddArc(arc);
+                                arc = new Arc(n, currentNode, avoidDanger ? sector.DangerLevel : 1);
+                                graph.AddArc(arc);
                             }
                             else
                             {
-                                east = universe.FirstOrDefault(p => p.X == sector.X + 1 && p.Y == sector.Y);
-                                if (east != null)
-                                {
-                                    sector.EastGate = east;
-                                    east.WestGate = sector;
-                                }
+                                east = universe[epos];
+                                sector.EastGate = east;
+                                east.WestGate = sector;
                             }
                         }
                     }
@@ -181,73 +185,48 @@ namespace UniverseGeneratorTest
                 GC.Collect();
                 Graphics g = Graphics.FromImage(img);
                 g.FillRectangle(new SolidBrush(Color.White), 0, 0, 10000, 10000);
-                for (int i = 0; i < universe.Count; i++)
+                foreach (KeyValuePair<Point3D, Sector> item in universe)
                 {
-                    int x = universe[i].X*40 - 8 + 500;
-                    int y = universe[i].Y*40 - 8 + 500;
-                    if (universe[i].X == 0 && universe[i].Y == 0)
+                    int x = item.Value.X * 40 - 8 + 500;
+                    int y = item.Value.Y * 40 - 8 + 500;
+                    if (item.Value.X == 0 && item.Value.Y == 0)
                     {
-                        g.DrawRectangle(new Pen(new SolidBrush(Color.Green)), x + img.Width/2, y + img.Height/2, 16, 16);
+                        g.DrawRectangle(new Pen(new SolidBrush(Color.Green)), x + img.Width / 2, y + img.Height / 2, 16, 16);
                     }
                     else
                     {
-                        if (universe[i].DangerLevel == 0)
-                            g.DrawRectangle(new Pen(new SolidBrush(Color.Black)), x + img.Width/2, y + img.Height/2, 16,
+                        if (item.Value.DangerLevel == 0)
+                            g.DrawRectangle(new Pen(new SolidBrush(Color.Black)), x + img.Width / 2, y + img.Height / 2, 16,
                                 16);
-                        else if (universe[i].DangerLevel <= 30)
-                            g.DrawRectangle(new Pen(new SolidBrush(Color.Orange)), x + img.Width/2, y + img.Height/2, 16,
+                        else if (item.Value.DangerLevel <= 30)
+                            g.DrawRectangle(new Pen(new SolidBrush(Color.Orange)), x + img.Width / 2, y + img.Height / 2, 16,
                                 16);
-                        else if (universe[i].DangerLevel <= 60)
-                            g.DrawRectangle(new Pen(new SolidBrush(Color.Red)), x + img.Width/2, y + img.Height/2, 16,
+                        else if (item.Value.DangerLevel <= 60)
+                            g.DrawRectangle(new Pen(new SolidBrush(Color.Red)), x + img.Width / 2, y + img.Height / 2, 16,
                                 16);
                         else
-                            g.DrawRectangle(new Pen(new SolidBrush(Color.Brown)), x + img.Width/2, y + img.Height/2, 16,
+                            g.DrawRectangle(new Pen(new SolidBrush(Color.Brown)), x + img.Width / 2, y + img.Height / 2, 16,
                                 16);
                     }
-                    if (universe[i].NorthGate != null)
+                    if (item.Value.NorthGate != null)
                     {
-                        g.DrawLine(new Pen(new SolidBrush(Color.Blue)), x + 8 + img.Width/2, y + img.Height/2,
-                            x + 8 + img.Width/2, y - 24 + img.Height/2);
+                        g.DrawLine(new Pen(new SolidBrush(Color.Blue)), x + 8 + img.Width / 2, y + img.Height / 2,
+                            x + 8 + img.Width / 2, y - 12 + img.Height / 2);
                     }
-                    if (universe[i].EastGate != null)
+                    if (item.Value.SouthGate != null)
                     {
-                        g.DrawLine(new Pen(new SolidBrush(Color.Blue)), x + 16 + img.Width/2, y + 8 + img.Height/2,
-                            x + 40 + img.Width/2, y + 8 + img.Height/2);
+                        g.DrawLine(new Pen(new SolidBrush(Color.Blue)), x + 8 + img.Width / 2, y + 16 + img.Height / 2,
+                            x + 8 + img.Width / 2, y + 30 + img.Height / 2);
                     }
-                }
-                Graph graph = new Graph();
-                foreach (Sector sector in universe)
-                {
-                    Node n = new Node(sector.X, sector.Y, 0);
-                    graph.AddNode(n);
-                }
-                foreach (Sector sector in universe)
-                {
-                    Arc arc;
-                    Node sec = graph.Nodes.First(p => p.X == sector.X && p.Y == sector.Y);
-                    if (sector.NorthGate != null)
+                    if (item.Value.WestGate != null)
                     {
-                        Node n = graph.Nodes.First(p => p.X == sector.NorthGate.X && p.Y == sector.NorthGate.Y);
-                        arc = new Arc(sec, n, avoidDanger ? sector.NorthGate.DangerLevel : 1);
-                        graph.AddArc(arc);
+                        g.DrawLine(new Pen(new SolidBrush(Color.Blue)), x + img.Width / 2, y + 8 + img.Height / 2,
+                            x - 12 + img.Width / 2, y + 8 + img.Height / 2);
                     }
-                    if (sector.SouthGate != null)
+                    if (item.Value.EastGate != null)
                     {
-                        Node s = graph.Nodes.First(p => p.X == sector.SouthGate.X && p.Y == sector.SouthGate.Y);
-                        arc = new Arc(sec, s, avoidDanger ? sector.SouthGate.DangerLevel : 1);
-                        graph.AddArc(arc);
-                    }
-                    if (sector.WestGate != null)
-                    {
-                        Node w = graph.Nodes.First(p => p.X == sector.WestGate.X && p.Y == sector.WestGate.Y);
-                        arc = new Arc(sec, w, avoidDanger ? sector.WestGate.DangerLevel : 1);
-                        graph.AddArc(arc);
-                    }
-                    if (sector.EastGate != null)
-                    {
-                        Node ea = graph.Nodes.First(p => p.X == sector.EastGate.X && p.Y == sector.EastGate.Y);
-                        arc = new Arc(sec, ea, avoidDanger ? sector.EastGate.DangerLevel : 1);
-                        graph.AddArc(arc);
+                        g.DrawLine(new Pen(new SolidBrush(Color.Blue)), x + 16 + img.Width / 2, y + 8 + img.Height / 2,
+                            x + 28 + img.Width / 2, y + 8 + img.Height / 2);
                     }
                 }
                 AStar a = new AStar(graph);
@@ -263,26 +242,16 @@ namespace UniverseGeneratorTest
                         int count = 0;
                         foreach (Node node in a.PathByNodes)
                         {
-                            int x = (int) node.X*40 - 8 + 500;
-                            int y = (int) node.Y*40 - 8 + 500;
+                            int x = (int)node.X * 40 - 8 + 500;
+                            int y = (int)node.Y * 40 - 8 + 500;
                             System.Drawing.Font f = new Font(FontFamily.GenericSerif, 20);
-                            g.DrawString(count++.ToString(), f, new SolidBrush(Color.Black), x + img.Width/2,
-                                y + img.Height/2);
-                            g.DrawRectangle(new Pen(new SolidBrush(Color.Blue)), x + 4 + img.Width/2,
-                                y + 4 + img.Height/2, 8, 8);
+                            g.DrawString(count++.ToString(), f, new SolidBrush(Color.Black), x + img.Width / 2,
+                                y + img.Height / 2);
+                            g.DrawRectangle(new Pen(new SolidBrush(Color.Blue)), x + 4 + img.Width / 2,
+                                y + 4 + img.Height / 2, 8, 8);
                         }
                     }
                 }
-
-                /*List<Sector> solution = MainClass.PrintSolution(astar.Solution,universe);
-
-            for (int i = 0; i < solution.Count; i++)
-            {
-                int x = solution[i].X * 40 - 8 + 500;
-                int y = solution[i].Y * 40 - 8 + 500;
-
-                g.DrawRectangle(new Pen(new SolidBrush(Color.Red)), x, y, 16, 16);
-            }*/
                 sw.Stop();
                 TimeSpan t = sw.Elapsed;
                 universePanel.Invalidate();
@@ -298,11 +267,11 @@ namespace UniverseGeneratorTest
         {
             double v =
                 // First octave
-                (noise.Noise(2*x, 2*y, -0.5) + 1)/2*0.7 +
+                (noise.Noise(2 * x, 2 * y, -0.5) + 1) / 2 * 0.7 +
                 // Second octave
-                (noise.Noise(4*x, 4*y, 0) + 1)/2*0.2 +
+                (noise.Noise(4 * x, 4 * y, 0) + 1) / 2 * 0.2 +
                 // Third octave
-                (noise.Noise(8*x, 8*y, +0.5) + 1)/2*0.1;
+                (noise.Noise(8 * x, 8 * y, +0.5) + 1) / 2 * 0.1;
 
             v = Math.Min(1, Math.Max(0, v));
             return v;

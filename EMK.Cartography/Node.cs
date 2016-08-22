@@ -26,19 +26,22 @@ namespace EMK.Cartography
 		bool _Passable;
 		ArrayList _IncomingArcs, _OutgoingArcs;
 
-		/// <summary>
-		/// Constructor.
-		/// </summary>
-		/// <param name="PositionX">X coordinate.</param>
-		/// <param name="PositionY">Y coordinate.</param>
-		/// <param name="PositionZ">Z coordinate.</param>
-		public Node(double PositionX, double PositionY, double PositionZ)
-		{
-			_Position = new Point3D(PositionX, PositionY, PositionZ);
-			_Passable = true;
-			_IncomingArcs = new ArrayList();
-			_OutgoingArcs = new ArrayList();
-		}
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="PositionX">X coordinate.</param>
+        /// <param name="PositionY">Y coordinate.</param>
+        /// <param name="PositionZ">Z coordinate.</param>
+        public Node(double PositionX, double PositionY, double PositionZ) : this(new Point3D(PositionX, PositionY, PositionZ))
+        { }
+
+        public Node(Point3D position)
+        {
+            _Position = position;
+            _Passable = true;
+            _IncomingArcs = new ArrayList();
+            _OutgoingArcs = new ArrayList();
+        }
 
 		/// <summary>
 		/// Gets the list of the arcs that lead to this node.

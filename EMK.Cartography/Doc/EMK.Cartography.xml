@@ -20,35 +20,6 @@
             <param name="Start">The node from which the arc starts.</param>
             <param name="End">The node to which the arc ends.</param>
         </member>
-        <member name="M:EMK.Cartography.Arc.CalculateLength">
-            <summary>
-            Performs the calculous that returns the arc's length
-            Can be overriden for derived types of arcs that are not linear.
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:EMK.Cartography.Arc.ToString">
-            <summary>
-            Returns the textual description of the arc.
-            object.ToString() override.
-            </summary>
-            <returns>String describing this arc.</returns>
-        </member>
-        <member name="M:EMK.Cartography.Arc.Equals(System.Object)">
-            <summary>
-            Object.Equals override.
-            Tells if two arcs are equal by comparing StartNode and EndNode.
-            </summary>
-            <exception cref="T:System.ArgumentException">Cannot compare an arc with another type.</exception>
-            <param name="O">The arc to compare with.</param>
-            <returns>'true' if both arcs are equal.</returns>
-        </member>
-        <member name="M:EMK.Cartography.Arc.GetHashCode">
-            <summary>
-            Object.GetHashCode override.
-            </summary>
-            <returns>HashCode value.</returns>
-        </member>
         <member name="P:EMK.Cartography.Arc.StartNode">
             <summary>
             Gets/Sets the node from which the arc starts.
@@ -81,11 +52,40 @@
             Gets arc's length.
             </summary>
         </member>
+        <member name="M:EMK.Cartography.Arc.CalculateLength">
+            <summary>
+            Performs the calculous that returns the arc's length
+            Can be overriden for derived types of arcs that are not linear.
+            </summary>
+            <returns></returns>
+        </member>
         <member name="P:EMK.Cartography.Arc.Cost">
             <summary>
             Gets the cost of moving through the arc.
             Can be overriden when not simply equals to Weight*Length.
             </summary>
+        </member>
+        <member name="M:EMK.Cartography.Arc.ToString">
+            <summary>
+            Returns the textual description of the arc.
+            object.ToString() override.
+            </summary>
+            <returns>String describing this arc.</returns>
+        </member>
+        <member name="M:EMK.Cartography.Arc.Equals(System.Object)">
+            <summary>
+            Object.Equals override.
+            Tells if two arcs are equal by comparing StartNode and EndNode.
+            </summary>
+            <exception cref="T:System.ArgumentException">Cannot compare an arc with another type.</exception>
+            <param name="O">The arc to compare with.</param>
+            <returns>'true' if both arcs are equal.</returns>
+        </member>
+        <member name="M:EMK.Cartography.Arc.GetHashCode">
+            <summary>
+            Object.GetHashCode override.
+            </summary>
+            <returns>HashCode value.</returns>
         </member>
         <member name="T:EMK.Cartography.Heuristic">
             <summary>
@@ -96,46 +96,6 @@
             <summary>
             Class to search the best path between two nodes on a graph.
             </summary>
-        </member>
-        <member name="M:EMK.Cartography.AStar.#ctor(EMK.Cartography.Graph)">
-            <summary>
-            AStar Constructor.
-            </summary>
-            <param name="G">The graph on which AStar will perform the search.</param>
-        </member>
-        <member name="M:EMK.Cartography.AStar.SearchPath(EMK.Cartography.Node,EMK.Cartography.Node)">
-            <summary>
-            Searches for the best path to reach the specified EndNode from the specified StartNode.
-            </summary>
-            <exception cref="T:System.ArgumentNullException">StartNode and EndNode cannot be null.</exception>
-            <param name="StartNode">The node from which the path must start.</param>
-            <param name="EndNode">The node to which the path must end.</param>
-            <returns>'true' if succeeded / 'false' if failed.</returns>
-        </member>
-        <member name="M:EMK.Cartography.AStar.Initialize(EMK.Cartography.Node,EMK.Cartography.Node)">
-            <summary>
-            Use for a 'step by step' search only. This method is alternate to SearchPath.
-            Initializes AStar before performing search steps manually with NextStep.
-            </summary>
-            <exception cref="T:System.ArgumentNullException">StartNode and EndNode cannot be null.</exception>
-            <param name="StartNode">The node from which the path must start.</param>
-            <param name="EndNode">The node to which the path must end.</param>
-        </member>
-        <member name="M:EMK.Cartography.AStar.NextStep">
-            <summary>
-            Use for a 'step by step' search only. This method is alternate to SearchPath.
-            The algorithm must have been initialize before.
-            </summary>
-            <exception cref="T:System.InvalidOperationException">You must initialize AStar before using NextStep().</exception>
-            <returns>'true' unless the search ended.</returns>
-        </member>
-        <member name="M:EMK.Cartography.AStar.ResultInformation(System.Int32@,System.Double@)">
-            <summary>
-            Returns information on the result.
-            </summary>
-            <param name="NbArcsOfPath">The number of arcs in the result path / -1 if no result.</param>
-            <param name="CostOfPath">The cost of the result path / -1 if no result.</param>
-            <returns>'true' if the search succeeded / 'false' if it failed.</returns>
         </member>
         <member name="P:EMK.Cartography.AStar.EuclidianHeuristic">
             <summary>
@@ -166,6 +126,21 @@
             </summary>
             <exception cref="T:System.ArgumentException">Value must belong to [0;1].</exception>
         </member>
+        <member name="M:EMK.Cartography.AStar.#ctor(EMK.Cartography.Graph)">
+            <summary>
+            AStar Constructor.
+            </summary>
+            <param name="G">The graph on which AStar will perform the search.</param>
+        </member>
+        <member name="M:EMK.Cartography.AStar.SearchPath(EMK.Cartography.Node,EMK.Cartography.Node)">
+            <summary>
+            Searches for the best path to reach the specified EndNode from the specified StartNode.
+            </summary>
+            <exception cref="T:System.ArgumentNullException">StartNode and EndNode cannot be null.</exception>
+            <param name="StartNode">The node from which the path must start.</param>
+            <param name="EndNode">The node to which the path must end.</param>
+            <returns>'true' if succeeded / 'false' if failed.</returns>
+        </member>
         <member name="P:EMK.Cartography.AStar.Open">
             <summary>
             Use for debug in 'step by step' mode only.
@@ -179,6 +154,23 @@
             Returns all the tracks found in the 'Closed' list of the algorithm at a given time.
             A track is a list of the nodes visited to come to the current node.
             </summary>
+        </member>
+        <member name="M:EMK.Cartography.AStar.Initialize(EMK.Cartography.Node,EMK.Cartography.Node)">
+            <summary>
+            Use for a 'step by step' search only. This method is alternate to SearchPath.
+            Initializes AStar before performing search steps manually with NextStep.
+            </summary>
+            <exception cref="T:System.ArgumentNullException">StartNode and EndNode cannot be null.</exception>
+            <param name="StartNode">The node from which the path must start.</param>
+            <param name="EndNode">The node to which the path must end.</param>
+        </member>
+        <member name="M:EMK.Cartography.AStar.NextStep">
+            <summary>
+            Use for a 'step by step' search only. This method is alternate to SearchPath.
+            The algorithm must have been initialize before.
+            </summary>
+            <exception cref="T:System.InvalidOperationException">You must initialize AStar before using NextStep().</exception>
+            <returns>'true' unless the search ended.</returns>
         </member>
         <member name="P:EMK.Cartography.AStar.Initialized">
             <summary>
@@ -208,6 +200,14 @@
             0 if it has not been started.
             </summary>
         </member>
+        <member name="M:EMK.Cartography.AStar.ResultInformation(System.Int32@,System.Double@)">
+            <summary>
+            Returns information on the result.
+            </summary>
+            <param name="NbArcsOfPath">The number of arcs in the result path / -1 if no result.</param>
+            <param name="CostOfPath">The cost of the result path / -1 if no result.</param>
+            <returns>'true' if the search succeeded / 'false' if it failed.</returns>
+        </member>
         <member name="P:EMK.Cartography.AStar.PathByNodes">
             <summary>
             Gets the array of nodes representing the found path.
@@ -235,6 +235,16 @@
         <member name="M:EMK.Cartography.Graph.#ctor">
             <summary>
             Constructor.
+            </summary>
+        </member>
+        <member name="P:EMK.Cartography.Graph.Nodes">
+            <summary>
+            Gets the List interface of the nodes in the graph.
+            </summary>
+        </member>
+        <member name="P:EMK.Cartography.Graph.Arcs">
+            <summary>
+            Gets the List interface of the arcs in the graph.
             </summary>
         </member>
         <member name="M:EMK.Cartography.Graph.Clear">
@@ -329,16 +339,6 @@
             <param name="IgnorePassableProperty">if 'false', then arcs whose property Passable is set to false will not be taken into account.</param>
             <returns>The closest arc that has been found.</returns>
         </member>
-        <member name="P:EMK.Cartography.Graph.Nodes">
-            <summary>
-            Gets the List interface of the nodes in the graph.
-            </summary>
-        </member>
-        <member name="P:EMK.Cartography.Graph.Arcs">
-            <summary>
-            Gets the List interface of the arcs in the graph.
-            </summary>
-        </member>
         <member name="T:EMK.Cartography.Node">
             <summary>
             Basically a node is defined with a geographical position in space.
@@ -353,6 +353,36 @@
             <param name="PositionY">Y coordinate.</param>
             <param name="PositionZ">Z coordinate.</param>
         </member>
+        <member name="P:EMK.Cartography.Node.IncomingArcs">
+            <summary>
+            Gets the list of the arcs that lead to this node.
+            </summary>
+        </member>
+        <member name="P:EMK.Cartography.Node.OutgoingArcs">
+            <summary>
+            Gets the list of the arcs that start from this node.
+            </summary>
+        </member>
+        <member name="P:EMK.Cartography.Node.Passable">
+            Gets/Sets the functional state of the node.
+            'true' means that the node is in its normal state.
+            'false' means that the node will not be taken into account (as if it did not exist).
+        </member>
+        <member name="P:EMK.Cartography.Node.X">
+            <summary>
+            Gets X coordinate.
+            </summary>
+        </member>
+        <member name="P:EMK.Cartography.Node.Y">
+            <summary>
+            Gets Y coordinate.
+            </summary>
+        </member>
+        <member name="P:EMK.Cartography.Node.Z">
+            <summary>
+            Gets Z coordinate.
+            </summary>
+        </member>
         <member name="M:EMK.Cartography.Node.ChangeXYZ(System.Double,System.Double,System.Double)">
             <summary>
             Modifies X, Y and Z coordinates
@@ -360,6 +390,27 @@
             <param name="PositionX">X coordinate.</param>
             <param name="PositionY">Y coordinate.</param>
             <param name="PositionZ">Z coordinate.</param>
+        </member>
+        <member name="P:EMK.Cartography.Node.Position">
+            <summary>
+            Gets/Sets the geographical position of the node.
+            </summary>
+            <exception cref="T:System.ArgumentNullException">Cannot set the Position to null.</exception>
+        </member>
+        <member name="P:EMK.Cartography.Node.AccessibleNodes">
+            <summary>
+            Gets the array of nodes that can be directly reached from this one.
+            </summary>
+        </member>
+        <member name="P:EMK.Cartography.Node.AccessingNodes">
+            <summary>
+            Gets the array of nodes that can directly reach this one.
+            </summary>
+        </member>
+        <member name="P:EMK.Cartography.Node.Molecule">
+            <summary>
+            Gets the array of nodes directly linked plus this one.
+            </summary>
         </member>
         <member name="M:EMK.Cartography.Node.Isolate">
             <summary>
@@ -465,55 +516,11 @@
             <param name="MinPoint">The point of minimal coordinates for the box.</param>
             <param name="MaxPoint">The point of maximal coordinates for the box.</param>
         </member>
-        <member name="P:EMK.Cartography.Node.IncomingArcs">
+        <member name="T:EMK.Cartography.Track">
             <summary>
-            Gets the list of the arcs that lead to this node.
-            </summary>
-        </member>
-        <member name="P:EMK.Cartography.Node.OutgoingArcs">
-            <summary>
-            Gets the list of the arcs that start from this node.
-            </summary>
-        </member>
-        <member name="P:EMK.Cartography.Node.Passable">
-            Gets/Sets the functional state of the node.
-            'true' means that the node is in its normal state.
-            'false' means that the node will not be taken into account (as if it did not exist).
-        </member>
-        <member name="P:EMK.Cartography.Node.X">
-            <summary>
-            Gets X coordinate.
-            </summary>
-        </member>
-        <member name="P:EMK.Cartography.Node.Y">
-            <summary>
-            Gets Y coordinate.
-            </summary>
-        </member>
-        <member name="P:EMK.Cartography.Node.Z">
-            <summary>
-            Gets Z coordinate.
-            </summary>
-        </member>
-        <member name="P:EMK.Cartography.Node.Position">
-            <summary>
-            Gets/Sets the geographical position of the node.
-            </summary>
-            <exception cref="T:System.ArgumentNullException">Cannot set the Position to null.</exception>
-        </member>
-        <member name="P:EMK.Cartography.Node.AccessibleNodes">
-            <summary>
-            Gets the array of nodes that can be directly reached from this one.
-            </summary>
-        </member>
-        <member name="P:EMK.Cartography.Node.AccessingNodes">
-            <summary>
-            Gets the array of nodes that can directly reach this one.
-            </summary>
-        </member>
-        <member name="P:EMK.Cartography.Node.Molecule">
-            <summary>
-            Gets the array of nodes directly linked plus this one.
+            A track is a succession of nodes which have been visited.
+            Thus when it leads to the target node, it is easy to return the result path.
+            These objects are contained in Open and Closed lists.
             </summary>
         </member>
         <member name="T:EMK.LightGeometry.Point3D">
@@ -537,6 +544,27 @@
             <param name="CoordinateX">X coordinate.</param>
             <param name="CoordinateY">Y coordinate.</param>
             <param name="CoordinateZ">Z coordinate.</param>
+        </member>
+        <member name="P:EMK.LightGeometry.Point3D.Item(System.Int32)">
+            <summary>
+            Accede to coordinates by indexes.
+            </summary>
+            <exception cref="T:System.IndexOutOfRangeException">Index must belong to [0;2].</exception>
+        </member>
+        <member name="P:EMK.LightGeometry.Point3D.X">
+            <summary>
+            Gets/Set X coordinate.
+            </summary>
+        </member>
+        <member name="P:EMK.LightGeometry.Point3D.Y">
+            <summary>
+            Gets/Set Y coordinate.
+            </summary>
+        </member>
+        <member name="P:EMK.LightGeometry.Point3D.Z">
+            <summary>
+            Gets/Set Z coordinate.
+            </summary>
         </member>
         <member name="M:EMK.LightGeometry.Point3D.DistanceBetween(EMK.LightGeometry.Point3D,EMK.LightGeometry.Point3D)">
             <summary>
@@ -580,34 +608,6 @@
             </summary>
             <returns>String describing this point.</returns>
         </member>
-        <member name="P:EMK.LightGeometry.Point3D.Item(System.Int32)">
-            <summary>
-            Accede to coordinates by indexes.
-            </summary>
-            <exception cref="T:System.IndexOutOfRangeException">Index must belong to [0;2].</exception>
-        </member>
-        <member name="P:EMK.LightGeometry.Point3D.X">
-            <summary>
-            Gets/Set X coordinate.
-            </summary>
-        </member>
-        <member name="P:EMK.LightGeometry.Point3D.Y">
-            <summary>
-            Gets/Set Y coordinate.
-            </summary>
-        </member>
-        <member name="P:EMK.LightGeometry.Point3D.Z">
-            <summary>
-            Gets/Set Z coordinate.
-            </summary>
-        </member>
-        <member name="T:EMK.Cartography.Track">
-            <summary>
-            A track is a succession of nodes which have been visited.
-            Thus when it leads to the target node, it is easy to return the result path.
-            These objects are contained in Open and Closed lists.
-            </summary>
-        </member>
         <member name="T:EMK.LightGeometry.Vector3D">
             <summary>
             Basic geometry class : easy to replace
@@ -637,39 +637,6 @@
             <param name="P1">First point of the vector.</param>
             <param name="P2">Second point of the vector.</param>
         </member>
-        <member name="M:EMK.LightGeometry.Vector3D.op_Multiply(EMK.LightGeometry.Vector3D,System.Double)">
-            <summary>
-            Multiplication of a vector by a scalar value.
-            </summary>
-            <param name="V">Vector to operate.</param>
-            <param name="Factor">Factor value.</param>
-            <returns>New vector resulting from the multiplication.</returns>
-        </member>
-        <member name="M:EMK.LightGeometry.Vector3D.op_Division(EMK.LightGeometry.Vector3D,System.Double)">
-            <summary>
-            Division of a vector by a scalar value.
-            </summary>
-            <exception cref="T:System.ArgumentException">Divider cannot be 0.</exception>
-            <param name="V">Vector to operate.</param>
-            <param name="Divider">Divider value.</param>
-            <returns>New vector resulting from the division.</returns>
-        </member>
-        <member name="M:EMK.LightGeometry.Vector3D.op_BitwiseOr(EMK.LightGeometry.Vector3D,EMK.LightGeometry.Vector3D)">
-            <summary>
-            Scalar product between two vectors.
-            </summary>
-            <param name="V1">First vector.</param>
-            <param name="V2">Second vector.</param>
-            <returns>Value resulting from the scalar product.</returns>
-        </member>
-        <member name="M:EMK.LightGeometry.Vector3D.op_Addition(EMK.LightGeometry.Point3D,EMK.LightGeometry.Vector3D)">
-            <summary>
-            Returns a point resulting from the translation of a specified point.
-            </summary>
-            <param name="P">Point to translate.</param>
-            <param name="V">Vector to apply for the translation.</param>
-            <returns>Point resulting from the translation.</returns>
-        </member>
         <member name="P:EMK.LightGeometry.Vector3D.Item(System.Int32)">
             <summary>
             Accede to coordinates by indexes.
@@ -691,6 +658,23 @@
             Gets/Sets delta Z value.
             </summary>
         </member>
+        <member name="M:EMK.LightGeometry.Vector3D.op_Multiply(EMK.LightGeometry.Vector3D,System.Double)">
+            <summary>
+            Multiplication of a vector by a scalar value.
+            </summary>
+            <param name="V">Vector to operate.</param>
+            <param name="Factor">Factor value.</param>
+            <returns>New vector resulting from the multiplication.</returns>
+        </member>
+        <member name="M:EMK.LightGeometry.Vector3D.op_Division(EMK.LightGeometry.Vector3D,System.Double)">
+            <summary>
+            Division of a vector by a scalar value.
+            </summary>
+            <exception cref="T:System.ArgumentException">Divider cannot be 0.</exception>
+            <param name="V">Vector to operate.</param>
+            <param name="Divider">Divider value.</param>
+            <returns>New vector resulting from the division.</returns>
+        </member>
         <member name="P:EMK.LightGeometry.Vector3D.SquareNorm">
             <summary>
             Gets the square norm of the vector.
@@ -701,6 +685,22 @@
             Gets the norm of the vector.
             </summary>
             <exception cref="T:System.InvalidOperationException">Vector's norm cannot be changed if it is 0.</exception>
+        </member>
+        <member name="M:EMK.LightGeometry.Vector3D.op_BitwiseOr(EMK.LightGeometry.Vector3D,EMK.LightGeometry.Vector3D)">
+            <summary>
+            Scalar product between two vectors.
+            </summary>
+            <param name="V1">First vector.</param>
+            <param name="V2">Second vector.</param>
+            <returns>Value resulting from the scalar product.</returns>
+        </member>
+        <member name="M:EMK.LightGeometry.Vector3D.op_Addition(EMK.LightGeometry.Point3D,EMK.LightGeometry.Vector3D)">
+            <summary>
+            Returns a point resulting from the translation of a specified point.
+            </summary>
+            <param name="P">Point to translate.</param>
+            <param name="V">Vector to apply for the translation.</param>
+            <returns>Point resulting from the translation.</returns>
         </member>
     </members>
 </doc>
