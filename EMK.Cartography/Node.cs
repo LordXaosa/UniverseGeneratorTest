@@ -11,7 +11,7 @@
 using System;
 using System.Collections;
 using EMK.LightGeometry;
-
+using System.Collections.Generic;
 
 namespace EMK.Cartography
 {
@@ -24,7 +24,7 @@ namespace EMK.Cartography
 	{
 		Point3D _Position;
 		bool _Passable;
-		ArrayList _IncomingArcs, _OutgoingArcs;
+		List<Arc> _IncomingArcs, _OutgoingArcs;
 
         /// <summary>
         /// Constructor.
@@ -39,19 +39,19 @@ namespace EMK.Cartography
         {
             _Position = position;
             _Passable = true;
-            _IncomingArcs = new ArrayList();
-            _OutgoingArcs = new ArrayList();
+            _IncomingArcs = new List<Arc>();
+            _OutgoingArcs = new List<Arc>();
         }
 
 		/// <summary>
 		/// Gets the list of the arcs that lead to this node.
 		/// </summary>
-		public IList IncomingArcs { get { return _IncomingArcs; } }
+		public List<Arc> IncomingArcs { get { return _IncomingArcs; } }
 
 		/// <summary>
 		/// Gets the list of the arcs that start from this node.
 		/// </summary>
-		public IList OutgoingArcs { get { return _OutgoingArcs; } }
+		public List<Arc> OutgoingArcs { get { return _OutgoingArcs; } }
 
 		/// Gets/Sets the functional state of the node.
 		/// 'true' means that the node is in its normal state.

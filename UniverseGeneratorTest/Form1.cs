@@ -28,7 +28,7 @@ namespace UniverseGeneratorTest
         Dictionary<Point3D, Sector> universe = new Dictionary<Point3D, Sector>();
         //ConcurrentDictionary<Point3D, Sector> universe = new ConcurrentDictionary<Point3D, Sector>();
 
-        Bitmap img = new Bitmap(1000, 1000);
+        Bitmap img;
 
         //bool[,] generated = new bool[100, 100];
 
@@ -37,14 +37,17 @@ namespace UniverseGeneratorTest
         MarkovNameGenerator ng = new MarkovNameGenerator(Words.WordsCatalogue, 0, 5);
         private int chance = 55;
         private double chanced = 0.481d;
+        Stopwatch sw = new Stopwatch();
         Random rnd;
         private async void startBt_Click(object sender, EventArgs e)
         {
+            timer1.Start();
+            sw.Reset();
+            sw.Start();
             await Task.Run(() =>
             {
-                Stopwatch sw = new Stopwatch();
-                sw.Start();
-                rnd = new Random(123456);
+
+                rnd = new Random(465845);
                 PerlinNoise noise = new PerlinNoise(8973454);
                 ng.Reset();
                 universe.Clear();
@@ -65,6 +68,10 @@ namespace UniverseGeneratorTest
                     queue.Enqueue(s);
                 }
                 int cycles = int.Parse(cyclesTb.Text);
+                int maxX = 0;
+                int maxY = 0;
+                int minX = 0;
+                int minY = 0;
                 for (int i = 0; i < cycles; i++)
                 //Parallel.For(0, cycles, (i) =>
                 {
@@ -73,6 +80,22 @@ namespace UniverseGeneratorTest
                         Arc arc;
                         Node n;
                         Sector sector = queue.Dequeue();
+                        if(maxX < sector.X)
+                        {
+                            maxX = sector.X;
+                        }
+                        if (maxY < sector.Y)
+                        {
+                            maxY = sector.Y;
+                        }
+                        if (minX > sector.X)
+                        {
+                            minX = sector.X;
+                        }
+                        if (minY > sector.X)
+                        {
+                            minY = sector.X;
+                        }
                         var v = GetSector(noise, sector.X, sector.Y - 1);
                         Node currentNode = graph.NodesDictionary[sector.Position];
                         //if (rnd.Next(100) < chance)
@@ -180,61 +203,60 @@ namespace UniverseGeneratorTest
                         }
                     }
                 }
-                img = new Bitmap(10000, 10000);
+                img = new Bitmap(((Math.Abs(minX) + Math.Abs(maxX)) * 44), ((Math.Abs(minY) + Math.Abs(maxY)) * 44));
+                int offsetX = (Math.Abs(minX) - Math.Abs(maxX)) * 8;//img.Width / 2
+                int offsetY = (Math.Abs(minY) - Math.Abs(maxY)) * 8;//img.Height / 2
                 GC.WaitForPendingFinalizers();
                 GC.Collect();
                 Graphics g = Graphics.FromImage(img);
-                g.FillRectangle(new SolidBrush(Color.White), 0, 0, 10000, 10000);
+                g.FillRectangle(new SolidBrush(Color.White), 0, 0, img.Width, img.Height);
                 foreach (KeyValuePair<Point3D, Sector> item in universe)
                 {
-                    int x = item.Value.X * 40 - 8 + 500;
-                    int y = item.Value.Y * 40 - 8 + 500;
+                    int x = item.Value.X * 40 - 8 + img.Width/2;
+                    int y = item.Value.Y * 40 - 8 + img.Height/2;
                     if (item.Value.X == 0 && item.Value.Y == 0)
                     {
-                        g.DrawRectangle(new Pen(new SolidBrush(Color.Green)), x + img.Width / 2, y + img.Height / 2, 16, 16);
+                        g.DrawRectangle(new Pen(new SolidBrush(Color.Green)), x + offsetX, y + offsetY, 16, 16);
                     }
                     else
                     {
                         if (item.Value.DangerLevel == 0)
-                            g.DrawRectangle(new Pen(new SolidBrush(Color.Black)), x + img.Width / 2, y + img.Height / 2, 16,
+                            g.DrawRectangle(new Pen(new SolidBrush(Color.Black)), x + offsetX, y + offsetY, 16,
                                 16);
                         else if (item.Value.DangerLevel <= 30)
-                            g.DrawRectangle(new Pen(new SolidBrush(Color.Orange)), x + img.Width / 2, y + img.Height / 2, 16,
+                            g.DrawRectangle(new Pen(new SolidBrush(Color.Orange)), x + offsetX, y + offsetY, 16,
                                 16);
                         else if (item.Value.DangerLevel <= 60)
-                            g.DrawRectangle(new Pen(new SolidBrush(Color.Red)), x + img.Width / 2, y + img.Height / 2, 16,
+                            g.DrawRectangle(new Pen(new SolidBrush(Color.Red)), x + offsetX, y + offsetY, 16,
                                 16);
                         else
-                            g.DrawRectangle(new Pen(new SolidBrush(Color.Brown)), x + img.Width / 2, y + img.Height / 2, 16,
+                            g.DrawRectangle(new Pen(new SolidBrush(Color.Brown)), x + offsetX, y + offsetY, 16,
                                 16);
                     }
                     if (item.Value.NorthGate != null)
                     {
-                        g.DrawLine(new Pen(new SolidBrush(Color.Blue)), x + 8 + img.Width / 2, y + img.Height / 2,
-                            x + 8 + img.Width / 2, y - 12 + img.Height / 2);
+                        g.DrawLine(new Pen(new SolidBrush(Color.Blue)), x + 8 + offsetX, y + offsetY,
+                            x + 8 + offsetX, y - 12 + offsetY);
                     }
                     if (item.Value.SouthGate != null)
                     {
-                        g.DrawLine(new Pen(new SolidBrush(Color.Blue)), x + 8 + img.Width / 2, y + 16 + img.Height / 2,
-                            x + 8 + img.Width / 2, y + 30 + img.Height / 2);
+                        g.DrawLine(new Pen(new SolidBrush(Color.Blue)), x + 8 + offsetX, y + 16 + offsetY,
+                            x + 8 + offsetX, y + 30 + offsetY);
                     }
                     if (item.Value.WestGate != null)
                     {
-                        g.DrawLine(new Pen(new SolidBrush(Color.Blue)), x + img.Width / 2, y + 8 + img.Height / 2,
-                            x - 12 + img.Width / 2, y + 8 + img.Height / 2);
+                        g.DrawLine(new Pen(new SolidBrush(Color.Blue)), x + offsetX, y + 8 + offsetY,
+                            x - 12 + offsetX, y + 8 + offsetY);
                     }
                     if (item.Value.EastGate != null)
                     {
-                        g.DrawLine(new Pen(new SolidBrush(Color.Blue)), x + 16 + img.Width / 2, y + 8 + img.Height / 2,
-                            x + 28 + img.Width / 2, y + 8 + img.Height / 2);
+                        g.DrawLine(new Pen(new SolidBrush(Color.Blue)), x + 16 + offsetX, y + 8 + offsetY,
+                            x + 28 + offsetX, y + 8 + offsetY);
                     }
                 }
                 AStar a = new AStar(graph);
                 Node start = graph.Nodes.First(p => p.X == 0 && p.Y == 0);
-
                 Node end = graph.Nodes[rnd.Next(0, graph.Nodes.Count)];
-
-
                 if (start != null && end != null)
                 {
                     if (a.SearchPath(start, end))
@@ -242,25 +264,23 @@ namespace UniverseGeneratorTest
                         int count = 0;
                         foreach (Node node in a.PathByNodes)
                         {
-                            int x = (int)node.X * 40 - 8 + 500;
-                            int y = (int)node.Y * 40 - 8 + 500;
+                            int x = (int)node.X * 40 - 8 + img.Width/2;
+                            int y = (int)node.Y * 40 - 8 + img.Height/2;
                             System.Drawing.Font f = new Font(FontFamily.GenericSerif, 20);
-                            g.DrawString(count++.ToString(), f, new SolidBrush(Color.Black), x + img.Width / 2,
-                                y + img.Height / 2);
-                            g.DrawRectangle(new Pen(new SolidBrush(Color.Blue)), x + 4 + img.Width / 2,
-                                y + 4 + img.Height / 2, 8, 8);
+                            g.DrawString(count++.ToString(), f, new SolidBrush(Color.Black), x + offsetX,
+                                y + offsetY);
+                            g.DrawRectangle(new Pen(new SolidBrush(Color.Blue)), x + 4 + offsetX,
+                                y + 4 + offsetY, 8, 8);
                         }
                     }
                 }
-                sw.Stop();
-                TimeSpan t = sw.Elapsed;
-                universePanel.Invalidate();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
             });
             FileStream fs = new FileStream("image.png", FileMode.Create);
             img.Save(fs, ImageFormat.Png);
             fs.Close();
+            universePanel.Invalidate();
+            sw.Stop();
+            timer1.Stop();
         }
 
         private double GetSector(PerlinNoise noise, int x, int y)
@@ -287,8 +307,23 @@ namespace UniverseGeneratorTest
 
         private void universePanel_Paint(object sender, PaintEventArgs e)
         {
-            Graphics g = e.Graphics;
-            g.DrawImage(img, 0, 0, 1000, 1000);
+            if (img != null)
+            {
+                Graphics g = e.Graphics;
+                var ratioX = (double)universePanel.ClientRectangle.Width / img.Width;
+                var ratioY = (double)universePanel.ClientRectangle.Height / img.Height;
+                var ratio = Math.Min(ratioX, ratioY);
+
+                var newWidth = (int)(img.Width * ratio);
+                var newHeight = (int)(img.Height * ratio);
+
+                g.DrawImage(img, 0, 0, newWidth, newHeight);
+            }
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            timeLbl.Text = sw.Elapsed.ToString();
         }
     }
 }

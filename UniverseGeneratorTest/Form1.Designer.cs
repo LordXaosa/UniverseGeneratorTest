@@ -28,9 +28,12 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.universePanel = new System.Windows.Forms.Panel();
             this.cyclesTb = new System.Windows.Forms.TextBox();
             this.startBt = new System.Windows.Forms.Button();
+            this.timeLbl = new System.Windows.Forms.Label();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.SuspendLayout();
             // 
             // universePanel
@@ -65,11 +68,26 @@
             this.startBt.UseVisualStyleBackColor = true;
             this.startBt.Click += new System.EventHandler(this.startBt_Click);
             // 
+            // timeLbl
+            // 
+            this.timeLbl.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.timeLbl.AutoSize = true;
+            this.timeLbl.Location = new System.Drawing.Point(200, 562);
+            this.timeLbl.Name = "timeLbl";
+            this.timeLbl.Size = new System.Drawing.Size(0, 13);
+            this.timeLbl.TabIndex = 3;
+            // 
+            // timer1
+            // 
+            this.timer1.Interval = 1;
+            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(966, 591);
+            this.Controls.Add(this.timeLbl);
             this.Controls.Add(this.startBt);
             this.Controls.Add(this.cyclesTb);
             this.Controls.Add(this.universePanel);
@@ -85,6 +103,8 @@
         private System.Windows.Forms.Panel universePanel;
         private System.Windows.Forms.TextBox cyclesTb;
         private System.Windows.Forms.Button startBt;
+        private System.Windows.Forms.Label timeLbl;
+        private System.Windows.Forms.Timer timer1;
     }
 }
 
