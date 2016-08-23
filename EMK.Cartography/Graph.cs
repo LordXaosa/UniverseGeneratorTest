@@ -27,8 +27,8 @@ namespace EMK.Cartography
         //HashSet<Node> LNH;
         Dictionary<Point3D, Node> NodesDict;
         List<Arc> LA;
-        //Dictionary<Point3D, Arc> ArcsDict;
         HashSet<Arc> LAH;
+        //Dictionary<Arc, Arc> ArcsDict;
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -39,7 +39,7 @@ namespace EMK.Cartography
             //LNH = new HashSet<Node>();
             LAH = new HashSet<Arc>();
             NodesDict = new Dictionary<Point3D, Node>();
-            //ArcsDict = new Dictionary<Point3D, Arc>();
+            //ArcsDict = new Dictionary<Arc, Arc>();
 		}
 
 		/// <summary>
@@ -53,6 +53,7 @@ namespace EMK.Cartography
         public List<Arc> Arcs { get { return LA; } }
 
         public Dictionary<Point3D, Node> NodesDictionary { get { return NodesDict; } }
+
 
 		/// <summary>
 		/// Empties the graph.
@@ -74,7 +75,6 @@ namespace EMK.Cartography
 		/// <returns>'true' if it has actually been added / 'false' if the node is null or if it is already in the graph.</returns>
 		public bool AddNode(Node NewNode)
 		{
-		    //if (LNH.Add(NewNode))
             if(!NodesDict.ContainsKey(NewNode.Position))
 		    {
                 NodesDict.Add(NewNode.Position, NewNode);

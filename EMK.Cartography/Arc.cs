@@ -27,6 +27,7 @@ namespace EMK.Cartography
 		bool _Passable;
 		double _Length;
 		bool _LengthUpdated;
+        public static int count = 0;
 
 		/// <summary>
 		/// Arc constructor.
@@ -165,10 +166,15 @@ namespace EMK.Cartography
 		/// <returns>'true' if both arcs are equal.</returns>
 		public override bool Equals(object O)
 		{
-			Arc A = O as Arc;
-		    if (A == null) return false;
-			return _StartNode.Equals(A._StartNode) && _EndNode.Equals(A._EndNode);
-		}
+            count++;
+            /*Arc A = (Arc)O;// as Arc;
+		    //if (A == null) return false;
+            //return _StartNode.Equals(A._StartNode) && _EndNode.Equals(A._EndNode);
+            return _StartNode.X == A.StartNode.X && _StartNode.Y == A.StartNode.Y &&
+                _StartNode.Z == A.StartNode.Z &&
+                _EndNode.X == A.EndNode.X && _EndNode.Y == A.EndNode.Y && _EndNode.Z == A.EndNode.Z;*/
+            return GetHashCode() == O.GetHashCode();
+        }
 
 		/// <summary>
 		/// Object.GetHashCode override.

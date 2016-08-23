@@ -25,7 +25,7 @@ namespace EMK.Cartography
 		Point3D _Position;
 		bool _Passable;
 		List<Arc> _IncomingArcs, _OutgoingArcs;
-
+        public static int count=0;
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -233,10 +233,12 @@ namespace EMK.Cartography
 		/// <returns>'true' if both nodes are equal.</returns>
 		public override bool Equals(object O)
 		{
+            count++;
 			Node N = O as Node;
 			if ( N==null ) throw new ArgumentException("Type "+O.GetType()+" cannot be compared with type "+GetType()+" !");
-			return Position.Equals(N.Position);
-		}
+            //return Position.Equals(N.Position);
+            return X == N.X && Y == N.Y && Z == N.Z;
+        }
 
 		/// <summary>
 		/// Returns a copy of this node.

@@ -148,13 +148,6 @@
             A track is a list of the nodes visited to come to the current node.
             </summary>
         </member>
-        <member name="P:EMK.Cartography.AStar.Closed">
-            <summary>
-            Use for debug in a 'step by step' mode only.
-            Returns all the tracks found in the 'Closed' list of the algorithm at a given time.
-            A track is a list of the nodes visited to come to the current node.
-            </summary>
-        </member>
         <member name="M:EMK.Cartography.AStar.Initialize(EMK.Cartography.Node,EMK.Cartography.Node)">
             <summary>
             Use for a 'step by step' search only. This method is alternate to SearchPath.

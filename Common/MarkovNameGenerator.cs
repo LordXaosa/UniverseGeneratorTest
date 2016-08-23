@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace UniverseGeneratorTest
+namespace Common
 {
     //Generates random names based on the statistical weight of letter sequences
     //in a collection of sample names

@@ -96,5 +96,16 @@ namespace EMK.Cartography
 			if ( P1==null || P2==null ) throw new ArgumentException("Objects must be of 'Track' type.");
 			return P1.EndNode==P2.EndNode;
 		}
-	}
+
+        public override bool Equals(object obj)
+        {
+            Track t = obj as Track;
+            return t != null && t.EndNode == EndNode;
+        }
+
+        public override int GetHashCode()
+        {
+            return EndNode.GetHashCode();
+        }
+    }
 }

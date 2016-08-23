@@ -12,7 +12,7 @@ using System;
 using System.Collections;
 using EMK.Collections;
 using EMK.LightGeometry;
-
+using System.Collections.Generic;
 
 namespace EMK.Cartography
 {
@@ -27,7 +27,8 @@ namespace EMK.Cartography
 	public class AStar
 	{
 		Graph _Graph;
-		SortableList _Open, _Closed;
+        SortableList _Open;//, _Closed;
+        Dictionary<Track,Track> _open, _closed;
 		Track _LeafToGoBackUp;
 		int _NbIterations = -1;
 
@@ -85,7 +86,11 @@ namespace EMK.Cartography
 		{
 			_Graph = G;
 			_Open = new SortableList();
-			_Closed = new SortableList();
+			//_Closed = new SortableList();
+            //_open = new HashSet<Track>();
+            //_closed = new HashSet<Track>();
+            _open = new Dictionary<Track, Track>();
+            _closed = new Dictionary<Track, Track>();
 			ChoosenHeuristic = EuclidianHeuristic;
 			DijkstraHeuristicBalance = 0.5;
 		}
@@ -127,7 +132,7 @@ namespace EMK.Cartography
 		/// Returns all the tracks found in the 'Closed' list of the algorithm at a given time.
 		/// A track is a list of the nodes visited to come to the current node.
 		/// </summary>
-		public Node[][] Closed
+		/*public Node[][] Closed
 		{
 			get
 			{
@@ -135,7 +140,7 @@ namespace EMK.Cartography
 				for ( int i=0; i<_Closed.Count; i++ ) NodesList[i] = GoBackUpNodes((Track)_Closed[i]);
 				return NodesList;
 			}
-		}
+		}*/
 
 		/// <summary>
 		/// Use for a 'step by step' search only. This method is alternate to SearchPath.
@@ -147,10 +152,14 @@ namespace EMK.Cartography
 		public void Initialize(Node StartNode, Node EndNode)
 		{
 			if ( StartNode==null || EndNode==null ) throw new ArgumentNullException();
-			_Closed.Clear();
+			//_Closed.Clear();
 			_Open.Clear();
+            _open.Clear();
+            _closed.Clear();
 			Track.Target = EndNode;
-			_Open.Add( new Track(StartNode) );
+            Track start = new Track(StartNode);
+            _Open.Add(start);
+            _open.Add(start,start);
 			_NbIterations = 0;
 			_LeafToGoBackUp = null;
 		}
@@ -170,15 +179,18 @@ namespace EMK.Cartography
 			int IndexMin = _Open.IndexOfMin();
 			Track BestTrack = (Track)_Open[IndexMin];
 			_Open.RemoveAt(IndexMin);
+            _open.Remove(BestTrack);
 			if ( BestTrack.Succeed )
 			{
 				_LeafToGoBackUp = BestTrack;
 				_Open.Clear();
+                _open.Clear();
 			}
 			else
 			{
 				Propagate(BestTrack);
-				_Closed.Add(BestTrack);
+				//_Closed.Add(BestTrack);
+                _closed.Add(BestTrack,BestTrack);
 			}
 			return _Open.Count>0;
 		}
@@ -190,13 +202,38 @@ namespace EMK.Cartography
 				if ( A.Passable && A.EndNode.Passable )
 				{
 					Track Successor = new Track(TrackToPropagate, A);
-					int PosNF = _Closed.IndexOf(Successor, SameNodesReached);
+                    if(_open.ContainsKey(Successor))
+                    {
+                        if (Successor.Cost >= _open[Successor].Cost) continue;
+                        int PosNO = _Open.IndexOf(Successor, SameNodesReached);
+                        if (PosNO > 0)
+                        {
+                            /*if (PosNO > 0 && Successor.Cost >= ((Track)_Open[PosNO]).Cost)
+                                continue;*/
+                            _Open.RemoveAt(PosNO);
+                            _open.Remove(Successor);
+                        }
+                    }
+                    if(_closed.ContainsKey(Successor))
+                    {
+                        if (Successor.Cost >= _closed[Successor].Cost) continue;
+                        _closed.Remove(Successor);
+                        /*int PosNF = _Closed.IndexOf(Successor, SameNodesReached);
+                        if (PosNF > 0)
+                        {
+                            if (PosNF > 0 && Successor.Cost >= ((Track)_Closed[PosNF]).Cost) continue;
+                            _Closed.RemoveAt(PosNF);
+                            _closed.Remove(Successor);
+                        }*/
+                    }
+					/*int PosNF = _Closed.IndexOf(Successor, SameNodesReached);
 					int PosNO = _Open.IndexOf(Successor, SameNodesReached);
 					if ( PosNF>0 && Successor.Cost>=((Track)_Closed[PosNF]).Cost ) continue;
 					if ( PosNO>0 && Successor.Cost>=((Track)_Open[PosNO]).Cost ) continue;
 					if ( PosNF>0 ) _Closed.RemoveAt(PosNF);
-					if ( PosNO>0 ) _Open.RemoveAt(PosNO);
+					if ( PosNO>0 ) _Open.RemoveAt(PosNO);*/
 					_Open.Add(Successor);
+                    _open.Add(Successor,Successor);
 				}
 			}
 		}

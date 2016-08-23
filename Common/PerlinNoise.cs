@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace UniverseGeneratorTest
+namespace Common
 {
 
     /* Perlin noise class.  ( by Tom Nuydens (tom@delphi3d.net) )
