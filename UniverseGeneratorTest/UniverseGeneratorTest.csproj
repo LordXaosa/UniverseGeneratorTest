@@ -88,6 +88,10 @@
       <Project>{34546eb7-05f2-428f-9b5c-abb9ec7830c6}</Project>
       <Name>EMK.Cartography</Name>
     </ProjectReference>
+    <ProjectReference Include="..\LibNoise\LibNoise.csproj">
+      <Project>{031c8cff-f147-44ea-b7e5-0a5644808a7e}</Project>
+      <Name>LibNoise</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

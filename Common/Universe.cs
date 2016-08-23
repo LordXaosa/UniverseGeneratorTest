@@ -1,5 +1,6 @@
 ﻿using EMK.Cartography;
 using EMK.LightGeometry;
+using LibNoise;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,7 +42,8 @@ namespace Common
         {
             Graph = new Graph();
             rnd = new Random(465845);
-            PerlinNoise noise = new PerlinNoise(8973454);
+            //PerlinNoise noise = new PerlinNoise(8973454);
+            FastBillow noise = new FastBillow(8973454);
             ng.Reset();
             Sectors.Clear();
             //universeHashSet.Clear();
@@ -87,7 +89,7 @@ namespace Common
                     {
                         minY = sector.X;
                     }
-                    var v = GetSector(noise, sector.X, sector.Y - 1);
+                    var v = noise.GetValue(sector.X, 0, sector.Y-1);//GetSector(noise, sector.X, sector.Y - 1);
                     Node currentNode = _graph.NodesDictionary[sector.Position];
                     //if (rnd.Next(100) < chance)
                     if (v > chanced)
@@ -115,7 +117,7 @@ namespace Common
                         }
                     }
                     //if (rnd.Next(100) < chance)
-                    v = GetSector(noise, sector.X, sector.Y + 1);
+                    v = noise.GetValue(sector.X, 0, sector.Y+1);// GetSector(noise, sector.X, sector.Y + 1);
                     if (v > chanced)
                     {
                         Point3D spos = new Point3D(sector.Position.X, sector.Position.Y + 1, 0);
@@ -141,7 +143,7 @@ namespace Common
                         }
                     }
                     //if (rnd.Next(100) < chance)
-                    v = GetSector(noise, sector.X - 1, sector.Y);
+                    v = noise.GetValue(sector.X-1, 0, sector.Y);// GetSector(noise, sector.X - 1, sector.Y);
                     if (v > chanced)
                     {
                         Point3D wpos = new Point3D(sector.Position.X - 1, sector.Position.Y, 0);
@@ -167,7 +169,7 @@ namespace Common
                         }
                     }
                     //if (rnd.Next(100) < chance)
-                    v = GetSector(noise, sector.X + 1, sector.Y);
+                    v = noise.GetValue(sector.X+1, 0, sector.Y);// GetSector(noise, sector.X + 1, sector.Y);
                     if (v > chanced)
                     {
                         Point3D epos = new Point3D(sector.Position.X + 1, sector.Position.Y, 0);
@@ -219,7 +221,7 @@ namespace Common
                 // Third octave
                 (noise.Noise(8 * x, 8 * y, +0.5) + 1) / 2 * 0.1;
 
-            v = Math.Min(1, Math.Max(0, v));
+            v = System.Math.Min(1, System.Math.Max(0, v));
             return v;
         }
 

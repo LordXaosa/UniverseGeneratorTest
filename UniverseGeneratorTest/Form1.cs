@@ -36,7 +36,7 @@ namespace UniverseGeneratorTest
         private bool avoidDanger = true;
 
         Universe universe = new Universe();
-        private double chanced = 0.48d;
+        private double chanced = 0.34d;
         Stopwatch sw = new Stopwatch();
         Random rnd;
         private async void startBt_Click(object sender, EventArgs e)
@@ -50,12 +50,12 @@ namespace UniverseGeneratorTest
             rnd = new Random(465845);
             await Task.Run(() =>
             {
-                /*universe = new Universe();
+                universe = new Universe();
                 GenerateUniverse();
                 
                 DrawUniverse();
-                FindPath();*/
-                PerlinNoise pn = new PerlinNoise(8973454);
+                FindPath();
+                /*PerlinNoise pn = new PerlinNoise(8973454);
                 img = new Bitmap(500, 500);
                 Graphics g = Graphics.FromImage(img);
                 g.FillRectangle(new SolidBrush(Color.White), 0, 0, 500, 500);
@@ -70,7 +70,7 @@ namespace UniverseGeneratorTest
                         else
                             img.SetPixel(i, j, Color.Black);
                     }
-                }
+                }*/
             });
             FileStream fs = new FileStream("image.png", FileMode.Create);
             img.Save(fs, ImageFormat.Png);
@@ -112,7 +112,8 @@ namespace UniverseGeneratorTest
             int maxY = (int)universe.Sectors.Max(p => p.Value.Position.Y);
             int maxX = (int)universe.Sectors.Max(p => p.Value.Position.X);
             //img = new Bitmap(((Math.Abs(minX) + Math.Abs(maxX)) * 44), ((Math.Abs(minY) + Math.Abs(maxY)) * 44));
-            img = new Bitmap(40000, 7500);
+            //img = new Bitmap(40000, 7500);
+            img = new Bitmap(20000, 20000);
             //int offsetX = (Math.Abs(minX) - Math.Abs(maxX)) * 8;//img.Width / 2
             //int offsetY = (Math.Abs(minY) - Math.Abs(maxY)) * 8;//img.Height / 2
             int offsetX = 0;// img.Width / 2;
