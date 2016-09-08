@@ -19,6 +19,7 @@ namespace Common
         public Point3D Position { get; set; }
         public int DangerLevel { get; set; }
         public string Name { get; set; }
+        public Race Race { get; set; }
 
         public Sector(Point3D position, string name, Sector north=null,Sector south=null, Sector west=null, Sector east=null)
         {
@@ -41,5 +42,16 @@ namespace Common
             if (s == null) return false;
             return this.Position.Equals(s.Position);
         }
+    }
+    public enum Race
+    {
+        Argon = 0,
+        Paranid = 1,
+        Teladi = 2,
+        Split = 3,
+        Boron = 4,
+        None = 5,
+        Xenon = 6,
+        Pirate = 7
     }
 }

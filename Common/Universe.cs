@@ -44,6 +44,22 @@ namespace Common
             rnd = new Random(465845);
             //PerlinNoise noise = new PerlinNoise(8973454);
             FastBillow noise = new FastBillow(8973454);
+            noise.NoiseQuality = NoiseQuality.High;
+            noise.OctaveCount = 6;
+            noise.Persistence = 0.6;
+            noise.Lacunarity = 0.4;
+            /*Perlin noise = new Perlin();
+            noise.Seed = 8973454;
+            noise.NoiseQuality = NoiseQuality.High;
+            noise.OctaveCount = 10;
+            noise.Persistence = 1.4;
+            noise.Lacunarity = 0.35;
+            noise.Frequency = 0.05;*/
+
+            Voronoi biome = new Voronoi();
+            biome.Seed = 8973454;
+            biome.Frequency = 0.8;
+
             ng.Reset();
             Sectors.Clear();
             //universeHashSet.Clear();
@@ -54,6 +70,8 @@ namespace Common
             {
                 Point3D pos = new Point3D(0, 0, 0);
                 Sector s = new Sector(pos, ng.NextName);// {X = 0, Y = 0, Name = ng.NextName};
+                //s.Race = GetRace((noise.GetValue(0, 0, 0) + 1) / 2.0);
+                s.Race = GetRace(biome.GetValue(0, 0, 0));
                 Sectors.Add(pos, s);
                 //universe.TryAdd(pos, s);
                 Node n = new Node(pos);
@@ -89,13 +107,16 @@ namespace Common
                     {
                         minY = sector.X;
                     }
-                    var v = noise.GetValue(sector.X, 0, sector.Y-1);//GetSector(noise, sector.X, sector.Y - 1);
+                    //var v = (noise.GetValue(sector.X, 0, sector.Y - 1)+1)/2.0;//GetSector(noise, sector.X, sector.Y - 1);
+                    var v = noise.GetValue(sector.X, 0, sector.Y - 1);//GetSector(noise, sector.X, sector.Y - 1);
                     Node currentNode = _graph.NodesDictionary[sector.Position];
                     //if (rnd.Next(100) < chance)
                     if (v > chanced)
                     {
                         Point3D npos = new Point3D(sector.X, sector.Y - 1, 0);
                         Sector north = new Sector(npos, ng.NextName, south: sector);
+                        //north.Race = GetRace(v);
+                        north.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
                         if (!Sectors.ContainsKey(npos))
                         {
                             RandomDangerLever(north);
@@ -117,11 +138,13 @@ namespace Common
                         }
                     }
                     //if (rnd.Next(100) < chance)
-                    v = noise.GetValue(sector.X, 0, sector.Y+1);// GetSector(noise, sector.X, sector.Y + 1);
+                    v = noise.GetValue(sector.X, 0, sector.Y + 1);// GetSector(noise, sector.X, sector.Y + 1);
                     if (v > chanced)
                     {
                         Point3D spos = new Point3D(sector.Position.X, sector.Position.Y + 1, 0);
                         Sector south = new Sector(spos, ng.NextName, north: sector);
+                        //south.Race = GetRace(v);
+                        south.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
                         if (!Sectors.ContainsKey(spos))
                         {
                             RandomDangerLever(south);
@@ -143,11 +166,13 @@ namespace Common
                         }
                     }
                     //if (rnd.Next(100) < chance)
-                    v = noise.GetValue(sector.X-1, 0, sector.Y);// GetSector(noise, sector.X - 1, sector.Y);
+                    v = noise.GetValue(sector.X - 1, 0, sector.Y);// GetSector(noise, sector.X - 1, sector.Y);
                     if (v > chanced)
                     {
                         Point3D wpos = new Point3D(sector.Position.X - 1, sector.Position.Y, 0);
                         Sector west = new Sector(wpos, ng.NextName, east: sector);
+                        //west.Race = GetRace(v);
+                        west.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
                         if (!Sectors.ContainsKey(wpos))
                         {
                             RandomDangerLever(west);
@@ -169,11 +194,13 @@ namespace Common
                         }
                     }
                     //if (rnd.Next(100) < chance)
-                    v = noise.GetValue(sector.X+1, 0, sector.Y);// GetSector(noise, sector.X + 1, sector.Y);
+                    v = noise.GetValue(sector.X + 1, 0, sector.Y);// GetSector(noise, sector.X + 1, sector.Y);
                     if (v > chanced)
                     {
                         Point3D epos = new Point3D(sector.Position.X + 1, sector.Position.Y, 0);
                         Sector east = new Sector(epos, ng.NextName, west: sector);
+                        //east.Race = GetRace(v);
+                        east.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
                         if (!Sectors.ContainsKey(epos))
                         {
                             RandomDangerLever(east);
@@ -231,6 +258,46 @@ namespace Common
             {
                 sector.DangerLevel = rnd.Next(100);
             }
+        }
+
+        public static uint BitRotate(uint x)
+        {
+            const int bits = 16;
+            return (x << bits) | (x >> (32 - bits));
+        }
+
+        public static uint GetXYNoise(int x, int y)
+        {
+            UInt32 num = 8462134;
+            for (uint i = 0; i < 16; i++)
+            {
+                num = num * 541 + (uint)x;
+                num = BitRotate(num);
+                num = num * 809 + (uint)y;
+                num = BitRotate(num);
+                num = num * 673 + (uint)i;
+                num = BitRotate(num);
+            }
+            return num % 3;
+        }
+
+        public Race GetRace(double val)
+        {
+            if (val <= 0)
+                return Race.Argon;
+            if (val <= 0.1)
+                return Race.Boron;
+            if (val <= 0.2)
+                return Race.Paranid;
+            if (val <= 0.3)
+                return Race.Split;
+            if (val <= 0.4)
+                return Race.Teladi;
+            if (val <= 0.6)
+                return Race.Pirate;
+            if (val <= 0.8)
+                return Race.Xenon;
+            return Race.None;
         }
     }
 }
