@@ -172,7 +172,7 @@ namespace UniverseGeneratorTest
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            timeLbl.Text = sw.Elapsed.ToString();
+            timeLbl.Text = sw.Elapsed.ToString() + " " + universe.Sectors.Count;
         }
 
         void GenerateUniverse()
