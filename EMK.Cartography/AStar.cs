@@ -226,14 +226,17 @@ namespace EMK.Cartography
                             _closed.Remove(Successor);
                         }*/
                     }
-					/*int PosNF = _Closed.IndexOf(Successor, SameNodesReached);
+                    /*int PosNF = _Closed.IndexOf(Successor, SameNodesReached);
 					int PosNO = _Open.IndexOf(Successor, SameNodesReached);
 					if ( PosNF>0 && Successor.Cost>=((Track)_Closed[PosNF]).Cost ) continue;
 					if ( PosNO>0 && Successor.Cost>=((Track)_Open[PosNO]).Cost ) continue;
 					if ( PosNF>0 ) _Closed.RemoveAt(PosNF);
 					if ( PosNO>0 ) _Open.RemoveAt(PosNO);*/
-					_Open.Add(Successor);
-                    _open.Add(Successor,Successor);
+                    if (!_open.ContainsKey(Successor))
+                    {
+                        _Open.Add(Successor);
+                        _open.Add(Successor, Successor);
+                    }
 				}
 			}
 		}

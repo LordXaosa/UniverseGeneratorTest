@@ -38,191 +38,227 @@ namespace Common
             Graph = new Graph();
         }
 
-        public void GenerateUniverse(int cycles, bool avoidDanger, double chanced)
+        public int MaxY { get; set; }
+        public int MaxX { get; set; }
+        public int MinY { get; set; }
+        public int MinX { get; set; }
+
+        public Task GenerateUniverse(int cycles, bool avoidDanger, double chanced)
         {
-            Graph = new Graph();
-            rnd = new Random(465845);
-            //PerlinNoise noise = new PerlinNoise(8973454);
-            FastBillow noise = new FastBillow(8973454);
-            noise.NoiseQuality = NoiseQuality.High;
-            noise.OctaveCount = 6;
-            noise.Persistence = 0.6;
-            noise.Lacunarity = 0.4;
-            /*Perlin noise = new Perlin();
-            noise.Seed = 8973454;
-            noise.NoiseQuality = NoiseQuality.High;
-            noise.OctaveCount = 10;
-            noise.Persistence = 1.4;
-            noise.Lacunarity = 0.35;
-            noise.Frequency = 0.05;*/
-
-            Voronoi biome = new Voronoi();
-            biome.Seed = 8973454;
-            biome.Frequency = 0.8;
-
-            ng.Reset();
-            Sectors.Clear();
-            //universeHashSet.Clear();
-            //bool[,] generated = new bool[1000, 1000];
-            Queue<Sector> queue = new Queue<Sector>();
-            //ConcurrentQueue<Sector> queue = new ConcurrentQueue<Sector>();
-            if (Sectors.Count == 0)
+            return Task.Run(() =>
             {
-                Point3D pos = new Point3D(0, 0, 0);
-                Sector s = new Sector(pos, ng.NextName);// {X = 0, Y = 0, Name = ng.NextName};
-                //s.Race = GetRace((noise.GetValue(0, 0, 0) + 1) / 2.0);
-                s.Race = GetRace(biome.GetValue(0, 0, 0));
-                Sectors.Add(pos, s);
-                //universe.TryAdd(pos, s);
-                Node n = new Node(pos);
-                _graph.AddNode(n);
-                //universeHashSet.Add(s);
-                queue.Enqueue(s);
-            }
-            int maxX = 0;
-            int maxY = 0;
-            int minX = 0;
-            int minY = 0;
-            for (int i = 0; i < cycles; i++)
-            //Parallel.For(0, cycles, (i) =>
-            {
-                if (queue.Count > 0)
+                Graph = new Graph();
+                rnd = new Random(465845);
+                //PerlinNoise noise = new PerlinNoise(8973454);
+                FastBillow noise = new FastBillow(8973454);
+                noise.NoiseQuality = NoiseQuality.High;
+                noise.OctaveCount = 6;
+                noise.Persistence = 0.6;
+                noise.Lacunarity = 0.4;
+                /*Perlin noise = new Perlin();
+                noise.Seed = 8973454;
+                noise.NoiseQuality = NoiseQuality.High;
+                noise.OctaveCount = 10;
+                noise.Persistence = 1.4;
+                noise.Lacunarity = 0.35;
+                noise.Frequency = 0.05;*/
+
+                Voronoi biome = new Voronoi();
+                biome.Seed = 8973454;
+                biome.Frequency = 0.8;
+
+                ng.Reset();
+                Sectors.Clear();
+                //universeHashSet.Clear();
+                //bool[,] generated = new bool[1000, 1000];
+                Queue<Sector> queue = new Queue<Sector>();
+                //ConcurrentQueue<Sector> queue = new ConcurrentQueue<Sector>();
+                if (Sectors.Count == 0)
                 {
-                    Arc arc;
-                    Node n;
-                    Sector sector = queue.Dequeue();
-                    if (maxX < sector.X)
+                    Point3D pos = new Point3D(0, 0, 0);
+                    Sector s = new Sector(pos, ng.NextName);// {X = 0, Y = 0, Name = ng.NextName};
+                                                            //s.Race = GetRace((noise.GetValue(0, 0, 0) + 1) / 2.0);
+                    s.Race = GetRace(biome.GetValue(0, 0, 0));
+                    Sectors.Add(pos, s);
+                    //universe.TryAdd(pos, s);
+                    Node n = new Node(pos);
+                    _graph.AddNode(n);
+                    //universeHashSet.Add(s);
+                    queue.Enqueue(s);
+                }
+                int maxX = 0;
+                int maxY = 0;
+                int minX = 0;
+                int minY = 0;
+                for (int i = 0; i < cycles; i++)
+                //Parallel.For(0, cycles, (i) =>
+                {
+                    if (queue.Count > 0)
                     {
-                        maxX = sector.X;
-                    }
-                    if (maxY < sector.Y)
-                    {
-                        maxY = sector.Y;
-                    }
-                    if (minX > sector.X)
-                    {
-                        minX = sector.X;
-                    }
-                    if (minY > sector.X)
-                    {
-                        minY = sector.X;
-                    }
-                    //var v = (noise.GetValue(sector.X, 0, sector.Y - 1)+1)/2.0;//GetSector(noise, sector.X, sector.Y - 1);
-                    var v = noise.GetValue(sector.X, 0, sector.Y - 1);//GetSector(noise, sector.X, sector.Y - 1);
-                    Node currentNode = _graph.NodesDictionary[sector.Position];
-                    //if (rnd.Next(100) < chance)
-                    if (v > chanced)
-                    {
-                        Point3D npos = new Point3D(sector.X, sector.Y - 1, 0);
-                        Sector north = new Sector(npos, ng.NextName, south: sector);
-                        //north.Race = GetRace(v);
-                        north.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
-                        if (!Sectors.ContainsKey(npos))
+                        Arc arc;
+                        Node n;
+                        Sector sector = queue.Dequeue();
+                        if (maxX < sector.X)
                         {
-                            RandomDangerLever(north);
-                            sector.NorthGate = north;
-                            queue.Enqueue(north);
-                            Sectors.Add(npos, north);
-                            n = new Node(npos);
-                            _graph.AddNode(n);
-                            arc = new Arc(currentNode, n, avoidDanger ? sector.NorthGate.DangerLevel : 1);
-                            _graph.AddArc(arc);
-                            arc = new Arc(n, currentNode, avoidDanger ? sector.DangerLevel : 1);
-                            _graph.AddArc(arc);
+                            maxX = sector.X;
                         }
-                        else
+                        if (maxY < sector.Y)
                         {
-                            north = Sectors[npos];
-                            sector.NorthGate = north;
-                            north.SouthGate = sector;
+                            maxY = sector.Y;
                         }
-                    }
-                    //if (rnd.Next(100) < chance)
-                    v = noise.GetValue(sector.X, 0, sector.Y + 1);// GetSector(noise, sector.X, sector.Y + 1);
-                    if (v > chanced)
-                    {
-                        Point3D spos = new Point3D(sector.Position.X, sector.Position.Y + 1, 0);
-                        Sector south = new Sector(spos, ng.NextName, north: sector);
-                        //south.Race = GetRace(v);
-                        south.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
-                        if (!Sectors.ContainsKey(spos))
+                        if (minX > sector.X)
                         {
-                            RandomDangerLever(south);
-                            sector.SouthGate = south;
-                            queue.Enqueue(south);
-                            Sectors.Add(spos, south);
-                            n = new Node(spos);
-                            _graph.AddNode(n);
-                            arc = new Arc(currentNode, n, avoidDanger ? sector.SouthGate.DangerLevel : 1);
-                            _graph.AddArc(arc);
-                            arc = new Arc(n, currentNode, avoidDanger ? sector.DangerLevel : 1);
-                            _graph.AddArc(arc);
+                            minX = sector.X;
                         }
-                        else
+                        if (minY > sector.X)
                         {
-                            south = Sectors[spos];
-                            sector.SouthGate = south;
-                            south.NorthGate = sector;
+                            minY = sector.X;
                         }
-                    }
-                    //if (rnd.Next(100) < chance)
-                    v = noise.GetValue(sector.X - 1, 0, sector.Y);// GetSector(noise, sector.X - 1, sector.Y);
-                    if (v > chanced)
-                    {
-                        Point3D wpos = new Point3D(sector.Position.X - 1, sector.Position.Y, 0);
-                        Sector west = new Sector(wpos, ng.NextName, east: sector);
-                        //west.Race = GetRace(v);
-                        west.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
-                        if (!Sectors.ContainsKey(wpos))
+                        //var v = (noise.GetValue(sector.X, 0, sector.Y - 1)+1)/2.0;//GetSector(noise, sector.X, sector.Y - 1);
+                        var v = noise.GetValue(sector.X, 0, sector.Y - 1);//GetSector(noise, sector.X, sector.Y - 1);
+                        Node currentNode = _graph.NodesDictionary[sector.Position];
+                        //if (rnd.Next(100) < chance)
+                        if (v > chanced)
                         {
-                            RandomDangerLever(west);
-                            sector.WestGate = west;
-                            queue.Enqueue(west);
-                            Sectors.Add(wpos, west);
-                            n = new Node(wpos);
-                            _graph.AddNode(n);
-                            arc = new Arc(currentNode, n, avoidDanger ? sector.WestGate.DangerLevel : 1);
-                            _graph.AddArc(arc);
-                            arc = new Arc(n, currentNode, avoidDanger ? sector.DangerLevel : 1);
-                            _graph.AddArc(arc);
+                            Point3D npos = new Point3D(sector.X, sector.Y - 1, 0);
+                            Sector north = new Sector(npos, ng.NextName, south: sector);
+                            //north.Race = GetRace(v);
+                            north.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
+                            if (!Sectors.ContainsKey(npos))
+                            {
+                                RandomDangerLever(north);
+                                sector.NorthGate = north;
+                                queue.Enqueue(north);
+                                Sectors.Add(npos, north);
+                                n = new Node(npos);
+                                _graph.AddNode(n);
+                                arc = new Arc(currentNode, n, avoidDanger ? sector.NorthGate.DangerLevel : 1);
+                                _graph.AddArc(arc);
+                                arc = new Arc(n, currentNode, avoidDanger ? sector.DangerLevel : 1);
+                                _graph.AddArc(arc);
+                            }
+                            else
+                            {
+                                north = Sectors[npos];
+                                sector.NorthGate = north;
+                                north.SouthGate = sector;
+
+                                n = _graph.NodesDictionary[npos];
+                                arc = new Arc(currentNode, n, avoidDanger ? sector.NorthGate.DangerLevel : 1);
+                                _graph.AddArc(arc);
+                                arc = new Arc(n, currentNode, avoidDanger ? sector.DangerLevel : 1);
+                                _graph.AddArc(arc);
+                            }
                         }
-                        else
+                        //if (rnd.Next(100) < chance)
+                        v = noise.GetValue(sector.X, 0, sector.Y + 1);// GetSector(noise, sector.X, sector.Y + 1);
+                        if (v > chanced)
                         {
-                            west = Sectors[wpos];
-                            sector.WestGate = west;
-                            west.EastGate = sector;
+                            Point3D spos = new Point3D(sector.Position.X, sector.Position.Y + 1, 0);
+                            Sector south = new Sector(spos, ng.NextName, north: sector);
+                            //south.Race = GetRace(v);
+                            south.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
+                            if (!Sectors.ContainsKey(spos))
+                            {
+                                RandomDangerLever(south);
+                                sector.SouthGate = south;
+                                queue.Enqueue(south);
+                                Sectors.Add(spos, south);
+                                n = new Node(spos);
+                                _graph.AddNode(n);
+                                arc = new Arc(currentNode, n, avoidDanger ? sector.SouthGate.DangerLevel : 1);
+                                _graph.AddArc(arc);
+                                arc = new Arc(n, currentNode, avoidDanger ? sector.DangerLevel : 1);
+                                _graph.AddArc(arc);
+                            }
+                            else
+                            {
+                                south = Sectors[spos];
+                                sector.SouthGate = south;
+                                south.NorthGate = sector;
+
+                                n = _graph.NodesDictionary[spos];
+                                arc = new Arc(currentNode, n, avoidDanger ? sector.SouthGate.DangerLevel : 1);
+                                _graph.AddArc(arc);
+                                arc = new Arc(n, currentNode, avoidDanger ? sector.DangerLevel : 1);
+                                _graph.AddArc(arc);
+                            }
                         }
-                    }
-                    //if (rnd.Next(100) < chance)
-                    v = noise.GetValue(sector.X + 1, 0, sector.Y);// GetSector(noise, sector.X + 1, sector.Y);
-                    if (v > chanced)
-                    {
-                        Point3D epos = new Point3D(sector.Position.X + 1, sector.Position.Y, 0);
-                        Sector east = new Sector(epos, ng.NextName, west: sector);
-                        //east.Race = GetRace(v);
-                        east.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
-                        if (!Sectors.ContainsKey(epos))
+                        //if (rnd.Next(100) < chance)
+                        v = noise.GetValue(sector.X - 1, 0, sector.Y);// GetSector(noise, sector.X - 1, sector.Y);
+                        if (v > chanced)
                         {
-                            RandomDangerLever(east);
-                            sector.EastGate = east;
-                            queue.Enqueue(east);
-                            Sectors.Add(epos, east);
-                            n = new Node(epos);
-                            _graph.AddNode(n);
-                            arc = new Arc(currentNode, n, avoidDanger ? sector.EastGate.DangerLevel : 1);
-                            _graph.AddArc(arc);
-                            arc = new Arc(n, currentNode, avoidDanger ? sector.DangerLevel : 1);
-                            _graph.AddArc(arc);
+                            Point3D wpos = new Point3D(sector.Position.X - 1, sector.Position.Y, 0);
+                            Sector west = new Sector(wpos, ng.NextName, east: sector);
+                            //west.Race = GetRace(v);
+                            west.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
+                            if (!Sectors.ContainsKey(wpos))
+                            {
+                                RandomDangerLever(west);
+                                sector.WestGate = west;
+                                queue.Enqueue(west);
+                                Sectors.Add(wpos, west);
+                                n = new Node(wpos);
+                                _graph.AddNode(n);
+                                arc = new Arc(currentNode, n, avoidDanger ? sector.WestGate.DangerLevel : 1);
+                                _graph.AddArc(arc);
+                                arc = new Arc(n, currentNode, avoidDanger ? sector.DangerLevel : 1);
+                                _graph.AddArc(arc);
+                            }
+                            else
+                            {
+                                west = Sectors[wpos];
+                                sector.WestGate = west;
+                                west.EastGate = sector;
+
+                                n = _graph.NodesDictionary[wpos];
+                                arc = new Arc(currentNode, n, avoidDanger ? sector.WestGate.DangerLevel : 1);
+                                _graph.AddArc(arc);
+                                arc = new Arc(n, currentNode, avoidDanger ? sector.DangerLevel : 1);
+                                _graph.AddArc(arc);
+                            }
                         }
-                        else
+                        //if (rnd.Next(100) < chance)
+                        v = noise.GetValue(sector.X + 1, 0, sector.Y);// GetSector(noise, sector.X + 1, sector.Y);
+                        if (v > chanced)
                         {
-                            east = Sectors[epos];
-                            sector.EastGate = east;
-                            east.WestGate = sector;
+                            Point3D epos = new Point3D(sector.Position.X + 1, sector.Position.Y, 0);
+                            Sector east = new Sector(epos, ng.NextName, west: sector);
+                            //east.Race = GetRace(v);
+                            east.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
+                            if (!Sectors.ContainsKey(epos))
+                            {
+                                RandomDangerLever(east);
+                                sector.EastGate = east;
+                                queue.Enqueue(east);
+                                Sectors.Add(epos, east);
+                                n = new Node(epos);
+                                _graph.AddNode(n);
+                                arc = new Arc(currentNode, n, avoidDanger ? sector.EastGate.DangerLevel : 1);
+                                _graph.AddArc(arc);
+                                arc = new Arc(n, currentNode, avoidDanger ? sector.DangerLevel : 1);
+                                _graph.AddArc(arc);
+                            }
+                            else
+                            {
+                                east = Sectors[epos];
+                                sector.EastGate = east;
+                                east.WestGate = sector;
+
+                                n = _graph.NodesDictionary[epos];
+                                arc = new Arc(currentNode, n, avoidDanger ? sector.EastGate.DangerLevel : 1);
+                                _graph.AddArc(arc);
+                                arc = new Arc(n, currentNode, avoidDanger ? sector.DangerLevel : 1);
+                                _graph.AddArc(arc);
+                            }
                         }
                     }
                 }
-            }
+                MaxX = (int)Sectors.Values.AsParallel().Max(p => p.Position.X);
+                MaxY = (int)Sectors.Values.AsParallel().Max(p => p.Position.Y); ;
+                MinX = (int)Sectors.Values.AsParallel().Min(p => p.Position.X); ;
+                MinY = (int)Sectors.Values.AsParallel().Min(p => p.Position.Y); ;
+            });
         }
 
         public Node[] FindPath(Node start, Node end)
@@ -236,6 +272,19 @@ namespace Common
                 }
             }
             return null;
+        }
+
+        public List<Sector> FindPath(Point3D start, Point3D end)
+        {
+            List<Sector> result = new List<Sector>();
+            Node startNode = Graph.NodesDictionary[start];
+            Node endNode = Graph.NodesDictionary[end];
+            Node[] nodes = FindPath(startNode, endNode);
+            foreach (Node n in nodes)
+            {
+                result.Add(Sectors[n.Position]);
+            }
+            return result;
         }
 
         private double GetSector(PerlinNoise noise, int x, int y)
@@ -301,3 +350,4 @@ namespace Common
         }
     }
 }
+

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Common
 {
-    public class Sector
+    public class Sector : NotifyPropertyChanged
     {
         public Sector NorthGate { get; set; }
         public Sector SouthGate { get; set; }
@@ -21,7 +21,18 @@ namespace Common
         public string Name { get; set; }
         public Race Race { get; set; }
 
-        public Sector(Point3D position, string name, Sector north=null,Sector south=null, Sector west=null, Sector east=null)
+        private bool _isRoute;
+        public bool IsRoute
+        {
+            get { return _isRoute; }
+            set
+            {
+                _isRoute = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        public Sector(Point3D position, string name, Sector north = null, Sector south = null, Sector west = null, Sector east = null)
         {
             Position = position;
             Name = name;

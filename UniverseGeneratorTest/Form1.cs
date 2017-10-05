@@ -209,7 +209,6 @@ namespace UniverseGeneratorTest
                 {
                     universePanel.Controls.Add(panel);
                 }));
-
             }
 
         }
@@ -221,7 +220,7 @@ namespace UniverseGeneratorTest
             int maxX = (int)universe.Sectors.Max(p => p.Value.Position.X);
             //img = new Bitmap(((Math.Abs(minX) + Math.Abs(maxX)) * 44), ((Math.Abs(minY) + Math.Abs(maxY)) * 44));
             //img = new Bitmap(40000, 7500);
-            img = new Bitmap(20000, 20000);
+            img = new Bitmap(15000, 15000);
             //int offsetX = (Math.Abs(minX) - Math.Abs(maxX)) * 8;//img.Width / 2
             //int offsetY = (Math.Abs(minY) - Math.Abs(maxY)) * 8;//img.Height / 2
             int offsetX = 0;// img.Width / 2;
@@ -320,10 +319,10 @@ namespace UniverseGeneratorTest
         {
             Graphics g = Graphics.FromImage(img);
             int count = 0;
-            int minY = (int)universe.Sectors.Min(p => p.Value.Position.Y);
-            int minX = (int)universe.Sectors.Min(p => p.Value.Position.X);
-            int maxY = (int)universe.Sectors.Max(p => p.Value.Position.Y);
-            int maxX = (int)universe.Sectors.Max(p => p.Value.Position.X);
+            int minY = universe.MinY;
+            int minX = universe.MinX;
+            int maxY = universe.MaxY;
+            int maxX = universe.MaxX;
             //int offsetX = (Math.Abs(minX) - Math.Abs(maxX)) * 8;//img.Width / 2
             //int offsetY = (Math.Abs(minY) - Math.Abs(maxY)) * 8;
             int offsetX = 0;// img.Width / 2;

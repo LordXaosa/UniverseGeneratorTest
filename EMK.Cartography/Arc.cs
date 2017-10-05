@@ -167,12 +167,6 @@ namespace EMK.Cartography
 		public override bool Equals(object O)
 		{
             count++;
-            /*Arc A = (Arc)O;// as Arc;
-		    //if (A == null) return false;
-            //return _StartNode.Equals(A._StartNode) && _EndNode.Equals(A._EndNode);
-            return _StartNode.X == A.StartNode.X && _StartNode.Y == A.StartNode.Y &&
-                _StartNode.Z == A.StartNode.Z &&
-                _EndNode.X == A.EndNode.X && _EndNode.Y == A.EndNode.Y && _EndNode.Z == A.EndNode.Z;*/
             return GetHashCode() == O.GetHashCode();
         }
 
@@ -184,7 +178,7 @@ namespace EMK.Cartography
 		{
 		    unchecked
 		    {
-		        return StartNode.GetHashCode() ^ EndNode.GetHashCode();
+                return StartNode.GetHashCode() ^ EndNode.GetHashCode();
             }
 		}
 	}
