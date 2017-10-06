@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using UniverseGeneratorTestWpf.Helpers;
 
 namespace UniverseGeneratorTestWpf
 {
@@ -53,8 +54,30 @@ namespace UniverseGeneratorTestWpf
             }
         }
 
-        private List<Sector> _sectors;
-        public List<Sector> Sectors
+        int _totalX;
+        public int TotalX
+        {
+            get { return _totalX; }
+            set
+            {
+                _totalX = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        int _totalY;
+        public int TotalY
+        {
+            get { return _totalY; }
+            set
+            {
+                _totalY = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        private GridLikeItemsSource _sectors;
+        public GridLikeItemsSource Sectors
         {
             get { return _sectors; }
             set
@@ -98,17 +121,20 @@ namespace UniverseGeneratorTestWpf
         
         async void GenerateUniverse()
         {
-            await universe.GenerateUniverse(10000, true, 0.0d);
+            await universe.GenerateUniverse(100000, true, 0.0d);
             MinX = universe.MinX;
             MinY = universe.MinY;
             MaxX = universe.MaxX;
             MaxY = universe.MaxY;
-            Sectors = universe.Sectors.Values.ToList();
+            TotalX = -MinX + MaxX + 1;
+            TotalY = -MinY + MaxY + 1;
+            Sectors = new GridLikeItemsSource(universe.Sectors.Values.ToList(), MinX, MinY, MaxX, MaxY, 50);
+            Sectors.Count = universe.Sectors.Count;
         }
 
         void FindWayCmd()
         {
-            Sectors.AsParallel().ForAll(p => p.IsRoute = false);
+            universe.Sectors.Values.AsParallel<Sector>().ForAll(p => p.IsRoute = false);
             Point3D start = SelectedSectors[0].Position;
             Point3D end = SelectedSectors[1].Position;
             List<Sector> sectorsToHighlight = universe.FindPath(start, end);

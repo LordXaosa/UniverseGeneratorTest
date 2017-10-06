@@ -8,6 +8,7 @@
         xmlns:conv="clr-namespace:UniverseGeneratorTestWpf.Converters"
         xmlns:components="clr-namespace:UniverseGeneratorTestWpf.Views.Components"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        xmlns:controls="Zooma"
         mc:Ignorable="d"
         Title="MainWindow" x:Name="Main" WindowState="Maximized">
     <Window.Resources>
@@ -19,23 +20,57 @@
             <ColumnDefinition></ColumnDefinition>
             <ColumnDefinition Width="250"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <components:MultipleItemsListView ItemsSource="{Binding Sectors}" SelectedItem="{Binding SelectedSector}" CustomSelectedItems="{Binding SelectedSectors, Mode=TwoWay}">
+        <components:MultipleItemsListView x:Name="MyListBox" ItemsSource="{Binding Sectors}" SelectedItem="{Binding SelectedSector}" CustomSelectedItems="{Binding SelectedSectors, Mode=TwoWay}"  PreviewMouseMove="ZoomableCanvas_PreviewMouseMove" PreviewMouseWheel="ZoomableCanvas_PreviewMouseWheel">
             <components:MultipleItemsListView.ItemsPanel>
                 <ItemsPanelTemplate>
-                    <components:CanvasAutoSize>
+                    <!--<components:CanvasAutoSize>
                         <Canvas.CacheMode>
-                            <BitmapCache EnableClearType="True" RenderAtScale="1" SnapsToDevicePixels="True" />
+                            <BitmapCache EnableClearType="False" RenderAtScale="10" SnapsToDevicePixels="False" />
                         </Canvas.CacheMode>
-                    </components:CanvasAutoSize>
+                    </components:CanvasAutoSize>-->
+                    <components:ZoomableCanvas RealizationLimit="5000"
+                        RealizationRate="20"
+                        RealizationPriority="Input"
+                        Loaded="ZoomableCanvas_Loaded"/>
                 </ItemsPanelTemplate>
             </components:MultipleItemsListView.ItemsPanel>
-            <components:MultipleItemsListView.ItemTemplate>
+            <!--<components:MultipleItemsListView.ItemTemplate>
                 <DataTemplate>
                     <views:SectorItemView/>
                 </DataTemplate>
-            </components:MultipleItemsListView.ItemTemplate>
+            </components:MultipleItemsListView.ItemTemplate>-->
             <components:MultipleItemsListView.ItemContainerStyle>
-                <Style>
+                <Style TargetType="ListBoxItem">
+
+                    <Setter Property="Canvas.Left">
+                        <Setter.Value>
+                            <MultiBinding Converter="{StaticResource mulConv}" ConverterParameter="{StaticResource Multiplier}">
+                                <Binding Path="X"/>
+                                <Binding Path="DataContext.MinX" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=Window}"/>
+                            </MultiBinding>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="Canvas.Top">
+                        <Setter.Value>
+                            <MultiBinding Converter="{StaticResource mulConv}" ConverterParameter="{StaticResource Multiplier}">
+                                <Binding Path="Y"/>
+                                <Binding Path="DataContext.MinY" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=Window}"/>
+                            </MultiBinding>
+                        </Setter.Value>
+                    </Setter>
+
+                    <Setter Property="VerticalContentAlignment" Value="Top"/>
+                    <Setter Property="HorizontalContentAlignment" Value="Left"/>
+
+                    <Setter Property="ContentTemplate">
+                        <Setter.Value>
+                            <DataTemplate>
+                                <views:SectorItemView/>
+                            </DataTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+                <!--<Style>
                     <Setter Property="Canvas.Left">
                         <Setter.Value>
                             <MultiBinding Converter="{StaticResource mulConv}" ConverterParameter="20">
@@ -52,7 +87,7 @@
                             </MultiBinding>
                         </Setter.Value>
                     </Setter>
-                </Style>
+                </Style>-->
             </components:MultipleItemsListView.ItemContainerStyle>
         </components:MultipleItemsListView>
         <GroupBox Grid.Column="1" Header="Информация о секторе">

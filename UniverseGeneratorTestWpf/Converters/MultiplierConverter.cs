@@ -15,7 +15,7 @@ namespace UniverseGeneratorTestWpf.Converters
         {
             int val = (int)values[0];
             int minus = (int)values[1];
-            int multiplier = int.Parse((string)parameter);
+            double multiplier = (double)parameter;
             double result = (-minus + val) * multiplier;
             return result;
         }

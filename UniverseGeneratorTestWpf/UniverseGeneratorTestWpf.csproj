@@ -60,6 +60,14 @@
     <Compile Include="Converters\ItemNotNullToVisibilityConverter.cs" />
     <Compile Include="Converters\MultiplierConverter.cs" />
     <Compile Include="Converters\RaceToColorConverter.cs" />
+    <Compile Include="Helpers\GridLikeItemSource.cs" />
+    <Compile Include="Helpers\LinkedListExtensions.cs" />
+    <Compile Include="Helpers\MathExtensions.cs" />
+    <Compile Include="Helpers\PriorityQuadTree.cs" />
+    <Compile Include="Helpers\PriorityQueue.cs" />
+    <Compile Include="Helpers\RectExtensions.cs" />
+    <Compile Include="Helpers\VirtualPanel.cs" />
+    <Compile Include="Views\Components\ZoomableCanvas.cs" />
     <Compile Include="Views\Components\CanvasAutoSize.cs" />
     <Compile Include="Views\Components\MultipleItemsListView.cs" />
     <Compile Include="Views\SectorItemView.xaml.cs">

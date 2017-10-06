@@ -12,13 +12,14 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using UniverseGeneratorTestWpf.Views.Components;
 
 namespace UniverseGeneratorTestWpf.Views
 {
     /// <summary>
     /// Interaction logic for SectorItemView.xaml
     /// </summary>
-    public partial class SectorItemView : UserControl
+    public partial class SectorItemView : Control
     {
         public SectorItemView()
         {

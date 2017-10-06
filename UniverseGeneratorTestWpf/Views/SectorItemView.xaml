@@ -1,4 +1,5 @@
-﻿<UserControl x:Class="UniverseGeneratorTestWpf.Views.SectorItemView"
+﻿<Control
+    xmlns:components="clr-namespace:UniverseGeneratorTestWpf.Views.Components" x:Class="UniverseGeneratorTestWpf.Views.SectorItemView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
@@ -6,23 +7,11 @@
              xmlns:local="clr-namespace:UniverseGeneratorTestWpf.Views"
              xmlns:conv="clr-namespace:UniverseGeneratorTestWpf.Converters"
              mc:Ignorable="d"
-             Width="20"
-             Height="20">
-    <UserControl.Resources>
-        <conv:ItemNotNullToVisibilityConverter x:Key="itemNotNullToVisibilityConverter"/>
-        <conv:RaceToColorConverter x:Key="raceToColor"/>
-        <conv:DangerLevelToColorConverter x:Key="dangerToColor"/>
-        <BooleanToVisibilityConverter x:Key="boolToVisibilityConverter"/>
-    </UserControl.Resources>
-    <Grid>
-        <Rectangle Stroke="{Binding Race, Converter={StaticResource raceToColor}}" HorizontalAlignment="Center" VerticalAlignment="Center" Width="10" Height="10"></Rectangle>
-        <Rectangle Stroke="{Binding DangerLevel, Converter={StaticResource dangerToColor}}" HorizontalAlignment="Center" VerticalAlignment="Center" Width="6" Height="6"></Rectangle>
-        <Line Height="5" Stroke="Black" VerticalAlignment="Top" HorizontalAlignment="Center" Y1="5" Visibility="{Binding NorthGate, Converter={StaticResource itemNotNullToVisibilityConverter}}"/>
-        <Line Height="5" Stroke="Black" VerticalAlignment="Bottom" HorizontalAlignment="Center"  Y2="5" Visibility="{Binding SouthGate, Converter={StaticResource itemNotNullToVisibilityConverter}}"></Line>
-
-        <Line Width="5" Stroke="Black" HorizontalAlignment="Left" VerticalAlignment="Center"  X2="5" Visibility="{Binding WestGate, Converter={StaticResource itemNotNullToVisibilityConverter}}"></Line>
-        <Line Width="5" Stroke="Black" HorizontalAlignment="Right" VerticalAlignment="Center" X1="5" Visibility="{Binding EastGate, Converter={StaticResource itemNotNullToVisibilityConverter}}"></Line>
-
-        <Rectangle Stroke="Brown" HorizontalAlignment="Center" VerticalAlignment="Center" Width="15" Height="15" Visibility="{Binding IsRoute, Converter={StaticResource boolToVisibilityConverter}}"></Rectangle>
-    </Grid>
-</UserControl>
+             Width="{StaticResource Multiplier}"
+             Height="{StaticResource Multiplier}">
+    <Control.Style>
+        <Style TargetType="Control">
+            <Setter Property="Template" Value="{StaticResource mainTempl}"/>
+        </Style>
+    </Control.Style>
+</Control>
