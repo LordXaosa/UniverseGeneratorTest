@@ -104,6 +104,7 @@
                     <RowDefinition Height="30"></RowDefinition>
                     <RowDefinition Height="30"></RowDefinition>
                     <RowDefinition Height="30"></RowDefinition>
+                    <RowDefinition Height="30"></RowDefinition>
                 </Grid.RowDefinitions>
                 <TextBlock Text="Название:"></TextBlock>
                 <TextBlock Grid.Column="1" Text="{Binding SelectedSector.Name}"></TextBlock>
@@ -120,7 +121,8 @@
                 <TextBlock Grid.Row="4" Text="Уровень опасности:"></TextBlock>
                 <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedSector.DangerLevel}"></TextBlock>
 
-                <Button Grid.Row="5" Grid.ColumnSpan="2" Content="Найти путь" Command="{Binding FindWay}"/>
+                <Button Grid.Row="6" Grid.ColumnSpan="2" Content="Найти путь" Command="{Binding FindWay}"/>
+                <CheckBox Grid.Row="5" Grid.ColumnSpan="2" Content="Кратчайший путь" IsChecked="{Binding SearchFastest}"/>
             </Grid>
         </GroupBox>
     </Grid>

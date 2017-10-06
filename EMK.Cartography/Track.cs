@@ -62,7 +62,7 @@ namespace EMK.Cartography
 				return _Coeff*_Cost+(1-_Coeff)*_ChoosenHeuristic(EndNode, _Target);
 			}
 		}
-
+        //bool _ignoreWeight;
 		public bool Succeed { get { return EndNode==_Target; } }
 
 		public Track(Node GraphNode)
@@ -74,11 +74,11 @@ namespace EMK.Cartography
 			EndNode = GraphNode;
 		}
 
-		public Track(Track PreviousTrack, Arc Transition)
+		public Track(Track PreviousTrack, Arc Transition, bool ignoreWeight)
 		{
 			if (_Target==null) throw new InvalidOperationException("You must specify a target Node for the Track class.");
 			Queue = PreviousTrack;
-			_Cost = Queue.Cost + Transition.Cost;
+			_Cost = Queue.Cost + (!ignoreWeight ? Transition.Cost: 1);
 			_NbArcsVisited = Queue._NbArcsVisited + 1;
 			EndNode = Transition.EndNode;
 		}

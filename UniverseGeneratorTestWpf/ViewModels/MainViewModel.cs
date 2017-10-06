@@ -76,6 +76,17 @@ namespace UniverseGeneratorTestWpf
             }
         }
 
+        bool _searchFastest;
+        public bool SearchFastest
+        {
+            get { return _searchFastest; }
+            set
+            {
+                _searchFastest = value;
+                RaisePropertyChanged();
+            }
+        }
+
         private GridLikeItemsSource _sectors;
         public GridLikeItemsSource Sectors
         {
@@ -137,7 +148,7 @@ namespace UniverseGeneratorTestWpf
             universe.Sectors.Values.AsParallel<Sector>().ForAll(p => p.IsRoute = false);
             Point3D start = SelectedSectors[0].Position;
             Point3D end = SelectedSectors[1].Position;
-            List<Sector> sectorsToHighlight = universe.FindPath(start, end);
+            List<Sector> sectorsToHighlight = universe.FindPath(start, end, SearchFastest);
             List<Point3D> positions = sectorsToHighlight.Select(p => p.Position).ToList();
             foreach(Point3D pos in positions)
             {

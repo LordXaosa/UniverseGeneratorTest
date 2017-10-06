@@ -309,7 +309,7 @@ namespace UniverseGeneratorTest
             Point3D startpos = new Point3D(0, 0, 0);
             Node start = universe.Graph.NodesDictionary[startpos];
             Node end = universe.Graph.Nodes[rnd.Next(0, universe.Graph.Nodes.Count)];
-            Node[] path = universe.FindPath(start, end);
+            Node[] path = universe.FindPath(start, end, false);
             if (path != null && img != null)
             {
                 DrawPath(path);

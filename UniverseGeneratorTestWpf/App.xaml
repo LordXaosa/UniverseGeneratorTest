@@ -4,6 +4,7 @@
              xmlns:local="clr-namespace:UniverseGeneratorTestWpf"
              xmlns:conv="clr-namespace:UniverseGeneratorTestWpf.Converters"
              xmlns:system="clr-namespace:System;assembly=mscorlib"
+             xmlns:components="clr-namespace:UniverseGeneratorTestWpf.Views.Components"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <conv:ItemNotNullToVisibilityConverter x:Key="itemNotNullToVisibilityConverter"/>
@@ -11,16 +12,20 @@
         <conv:DangerLevelToColorConverter x:Key="dangerToColor"/>
         <BooleanToVisibilityConverter x:Key="boolToVisibilityConverter"/>
         <ControlTemplate x:Key="mainTempl">
-            <Canvas>
-                <TextBlock Text="{Binding Name}" HorizontalAlignment="Center" Foreground="{Binding Race, Converter={StaticResource raceToColor}}"/>
-                <Rectangle Canvas.Left="20" Canvas.Top="20" Stroke="{Binding Race, Converter={StaticResource raceToColor}}" HorizontalAlignment="Center" VerticalAlignment="Center" Width="10" Height="10"></Rectangle>
-                <Rectangle Canvas.Left="21" Canvas.Top="21"  Stroke="{Binding DangerLevel, Converter={StaticResource dangerToColor}}" HorizontalAlignment="Center" VerticalAlignment="Center" Width="8" Height="8"></Rectangle>
-                <Line Height="10" Canvas.Left="25" Stroke="Black" VerticalAlignment="Top" HorizontalAlignment="Center" Y1="10" Visibility="{Binding NorthGate, Converter={StaticResource itemNotNullToVisibilityConverter}}"/>
-                <Line Height="10" Canvas.Left="25" Canvas.Top="40" Stroke="Black" VerticalAlignment="Bottom" HorizontalAlignment="Center"  Y2="10" Visibility="{Binding SouthGate, Converter={StaticResource itemNotNullToVisibilityConverter}}"></Line>
-                <Line Width="10" Canvas.Left="0" Canvas.Top="25" Stroke="Black" HorizontalAlignment="Left" VerticalAlignment="Center"  X2="10" Visibility="{Binding WestGate, Converter={StaticResource itemNotNullToVisibilityConverter}}"></Line>
-                <Line Width="10" Canvas.Left="40" Canvas.Top="25" Stroke="Black" HorizontalAlignment="Right" VerticalAlignment="Center" X1="10" Visibility="{Binding EastGate, Converter={StaticResource itemNotNullToVisibilityConverter}}"></Line>
-                <Rectangle Canvas.Left="15" Canvas.Top="15" Stroke="Brown" HorizontalAlignment="Center" VerticalAlignment="Center" Width="20" Height="20" Visibility="{Binding IsRoute, Converter={StaticResource boolToVisibilityConverter}}"></Rectangle>
-            </Canvas>
+            <Grid>
+                <Canvas>
+                    <Rectangle Canvas.Left="20" Canvas.Top="20" Stroke="{Binding Race, Converter={StaticResource raceToColor}}" HorizontalAlignment="Center" VerticalAlignment="Center" Width="10" Height="10"></Rectangle>
+                    <Rectangle Canvas.Left="21" Canvas.Top="21" Fill="{Binding DangerLevel, Converter={StaticResource dangerToColor}}" Stroke="{Binding DangerLevel, Converter={StaticResource dangerToColor}}" HorizontalAlignment="Center" VerticalAlignment="Center" Width="8" Height="8"></Rectangle>
+                    <Line Height="15" StrokeThickness="2" Canvas.Top="5" Canvas.Left="25" Stroke="Black" VerticalAlignment="Top" HorizontalAlignment="Center" Y1="15" Visibility="{Binding NorthGate, Converter={StaticResource itemNotNullToVisibilityConverter}}"/>
+                    <Line Height="15" StrokeThickness="2" Width="2" Canvas.Left="25" Canvas.Top="30" Stroke="Black" VerticalAlignment="Bottom" HorizontalAlignment="Center"  Y2="15" Visibility="{Binding SouthGate, Converter={StaticResource itemNotNullToVisibilityConverter}}"></Line>
+                    <Line Width="15" StrokeThickness="2" Height="2" Canvas.Left="5" Canvas.Top="25" Stroke="Black" HorizontalAlignment="Left" VerticalAlignment="Center"  X2="15" Visibility="{Binding WestGate, Converter={StaticResource itemNotNullToVisibilityConverter}}"></Line>
+                    <Line Width="15" StrokeThickness="2" Height="2" Canvas.Left="30" Canvas.Top="25" Stroke="Black" HorizontalAlignment="Right" VerticalAlignment="Center" X1="15" Visibility="{Binding EastGate, Converter={StaticResource itemNotNullToVisibilityConverter}}"></Line>
+                    <Rectangle Canvas.Left="15" Canvas.Top="15" Stroke="Brown" HorizontalAlignment="Center" VerticalAlignment="Center" Width="20" Height="20" Visibility="{Binding IsRoute, Converter={StaticResource boolToVisibilityConverter}}"></Rectangle>
+                </Canvas>
+                <components:CanvasAutoSize HorizontalAlignment="Center" VerticalAlignment="Top">
+                    <components:OutlinedTextBlock Text="{Binding Name}" StrokeThickness="0.4" Fill="{Binding Race, Converter={StaticResource raceToColor}}" Stroke="LightGreen"/>
+                </components:CanvasAutoSize>
+            </Grid>
         </ControlTemplate>
         <system:Double x:Key="Multiplier">50</system:Double>
     </Application.Resources>

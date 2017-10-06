@@ -28,7 +28,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
+    <Optimize>false</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
@@ -67,6 +67,7 @@
     <Compile Include="Helpers\PriorityQueue.cs" />
     <Compile Include="Helpers\RectExtensions.cs" />
     <Compile Include="Helpers\VirtualPanel.cs" />
+    <Compile Include="Views\Components\OutlinedTextBlock.cs" />
     <Compile Include="Views\Components\ZoomableCanvas.cs" />
     <Compile Include="Views\Components\CanvasAutoSize.cs" />
     <Compile Include="Views\Components\MultipleItemsListView.cs" />

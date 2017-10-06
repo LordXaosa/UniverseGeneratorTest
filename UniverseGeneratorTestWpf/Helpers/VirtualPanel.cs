@@ -318,7 +318,7 @@ namespace System.Windows.Controls
                     {
                         var oldIndex = generator.IndexFromGeneratorPosition(args.Position);
                         var oldItems = new ArrayList(args.ItemCount);
-                        /*
+                        
                         // Since we can't actually get the old items directly, and sometimes we can't even get the old index from the generator, we'll get as many as we can from the visuals.
                         for (int i = 0; i < args.ItemUICount; i++)
                         {
@@ -336,7 +336,7 @@ namespace System.Windows.Controls
                         {
                             RemoveInternalChildRange(args.Position.Index, args.ItemUICount);
                         }
-                        */
+                        
                         OnItemsChanged(items, new NotifyCollectionChangedEventArgs(action, oldItems, oldIndex));
                     }
                     else if (action == NotifyCollectionChangedAction.Move)
@@ -344,7 +344,7 @@ namespace System.Windows.Controls
                         var oldIndex = -1;
                         var index = generator.IndexFromGeneratorPosition(args.Position);
                         var movedItems = new VirtualItemsList(items, index, args.ItemCount);
-                        /*
+                        
                         var count = args.ItemUICount;
                         if (count > 0)
                         {
@@ -363,7 +363,7 @@ namespace System.Windows.Controls
                                 InsertInternalChild(args.Position.Index + i, elements[i]);
                             }
                         }
-                        */
+                        
                         OnItemsChanged(items, new NotifyCollectionChangedEventArgs(action, movedItems, index, oldIndex));
                     }
                     else if (action == NotifyCollectionChangedAction.Replace)
@@ -429,9 +429,9 @@ namespace System.Windows.Controls
                 var position = generator.GeneratorPositionFromIndex(itemIndex);
                 if (position.Offset == 0)
                 {
-                    /*generator.Remove(position, 1);
+                    generator.Remove(position, 1);
                     InternalChildren[position.Index].ClearValue(IndexForItemContainerProperty);
-                    RemoveInternalChildRange(position.Index, 1);*/
+                    RemoveInternalChildRange(position.Index, 1);
                 }
             }
         }

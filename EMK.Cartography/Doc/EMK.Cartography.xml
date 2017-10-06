@@ -132,7 +132,7 @@
             </summary>
             <param name="G">The graph on which AStar will perform the search.</param>
         </member>
-        <member name="M:EMK.Cartography.AStar.SearchPath(EMK.Cartography.Node,EMK.Cartography.Node)">
+        <member name="M:EMK.Cartography.AStar.SearchPath(EMK.Cartography.Node,EMK.Cartography.Node,System.Boolean)">
             <summary>
             Searches for the best path to reach the specified EndNode from the specified StartNode.
             </summary>
@@ -157,7 +157,7 @@
             <param name="StartNode">The node from which the path must start.</param>
             <param name="EndNode">The node to which the path must end.</param>
         </member>
-        <member name="M:EMK.Cartography.AStar.NextStep">
+        <member name="M:EMK.Cartography.AStar.NextStep(System.Boolean)">
             <summary>
             Use for a 'step by step' search only. This method is alternate to SearchPath.
             The algorithm must have been initialize before.
