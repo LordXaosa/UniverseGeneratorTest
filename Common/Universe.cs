@@ -2,7 +2,9 @@
 using EMK.LightGeometry;
 using LibNoise;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,8 +13,8 @@ namespace Common
 {
     public class Universe
     {
-        private Dictionary<Point3D, Sector> _sectors;
-        public Dictionary<Point3D, Sector> Sectors
+        private ConcurrentDictionary<Point3D, Sector> _sectors;
+        public ConcurrentDictionary<Point3D, Sector> Sectors
         {
             get { return _sectors; }
             set
@@ -34,7 +36,7 @@ namespace Common
 
         public Universe()
         {
-            Sectors = new Dictionary<Point3D, Sector>();
+            Sectors = new ConcurrentDictionary<Point3D, Sector>();
             Graph = new Graph();
         }
 
@@ -69,51 +71,27 @@ namespace Common
 
                 ng.Reset();
                 Sectors.Clear();
-                //universeHashSet.Clear();
-                //bool[,] generated = new bool[1000, 1000];
-                Queue<Sector> queue = new Queue<Sector>();
-                //ConcurrentQueue<Sector> queue = new ConcurrentQueue<Sector>();
+                ConcurrentQueue<Sector> queue = new ConcurrentQueue<Sector>();
                 if (Sectors.Count == 0)
                 {
                     Point3D pos = new Point3D(0, 0, 0);
-                    Sector s = new Sector(pos, ng.NextName);// {X = 0, Y = 0, Name = ng.NextName};
-                                                            //s.Race = GetRace((noise.GetValue(0, 0, 0) + 1) / 2.0);
-                    s.Race = GetRace(biome.GetValue(0, 0, 0));
-                    Sectors.Add(pos, s);
-                    //universe.TryAdd(pos, s);
+                    Sector s = new Sector(pos, ng.GetName(pos.GetHashCode()));
+                    s.Race = GetRace(biome.GetValue(pos.X, 0, pos.Y));
+                    Sectors.TryAdd(pos, s);
                     Node n = new Node(pos);
                     _graph.AddNode(n);
-                    //universeHashSet.Add(s);
                     queue.Enqueue(s);
                 }
-                int maxX = 0;
-                int maxY = 0;
-                int minX = 0;
-                int minY = 0;
                 for (int i = 0; i < cycles; i++)
+                //while(queue.Count>0)
                 //Parallel.For(0, cycles, (i) =>
                 {
                     if (queue.Count > 0)
                     {
                         Arc arc;
                         Node n;
-                        Sector sector = queue.Dequeue();
-                        if (maxX < sector.X)
-                        {
-                            maxX = sector.X;
-                        }
-                        if (maxY < sector.Y)
-                        {
-                            maxY = sector.Y;
-                        }
-                        if (minX > sector.X)
-                        {
-                            minX = sector.X;
-                        }
-                        if (minY > sector.X)
-                        {
-                            minY = sector.X;
-                        }
+                        Sector sector;
+                        queue.TryDequeue(out sector);
                         //var v = (noise.GetValue(sector.X, 0, sector.Y - 1)+1)/2.0;//GetSector(noise, sector.X, sector.Y - 1);
                         var v = noise.GetValue(sector.X, 0, sector.Y - 1);//GetSector(noise, sector.X, sector.Y - 1);
                         Node currentNode = _graph.NodesDictionary[sector.Position];
@@ -121,15 +99,15 @@ namespace Common
                         if (v > chanced)
                         {
                             Point3D npos = new Point3D(sector.X, sector.Y - 1, 0);
-                            Sector north = new Sector(npos, ng.NextName, south: sector);
+                            Sector north = new Sector(npos, ng.GetName(npos.GetHashCode()), south: sector);
                             //north.Race = GetRace(v);
-                            north.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
-                            if (!Sectors.ContainsKey(npos))
+                            if (Sectors.TryAdd(npos, north))
                             {
+                                north.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
                                 RandomDangerLever(north);
                                 sector.NorthGate = north;
                                 queue.Enqueue(north);
-                                Sectors.Add(npos, north);
+                                
                                 n = new Node(npos);
                                 _graph.AddNode(n);
                                 arc = new Arc(currentNode, n, avoidDanger ? sector.NorthGate.DangerLevel : 1);
@@ -155,15 +133,14 @@ namespace Common
                         if (v > chanced)
                         {
                             Point3D spos = new Point3D(sector.Position.X, sector.Position.Y + 1, 0);
-                            Sector south = new Sector(spos, ng.NextName, north: sector);
-                            //south.Race = GetRace(v);
-                            south.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
-                            if (!Sectors.ContainsKey(spos))
+                            Sector south = new Sector(spos, ng.GetName(spos.GetHashCode()), north: sector);
+                            if (Sectors.TryAdd(spos, south))
                             {
+                                //south.Race = GetRace(v);
+                                south.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
                                 RandomDangerLever(south);
                                 sector.SouthGate = south;
                                 queue.Enqueue(south);
-                                Sectors.Add(spos, south);
                                 n = new Node(spos);
                                 _graph.AddNode(n);
                                 arc = new Arc(currentNode, n, avoidDanger ? sector.SouthGate.DangerLevel : 1);
@@ -189,15 +166,14 @@ namespace Common
                         if (v > chanced)
                         {
                             Point3D wpos = new Point3D(sector.Position.X - 1, sector.Position.Y, 0);
-                            Sector west = new Sector(wpos, ng.NextName, east: sector);
+                            Sector west = new Sector(wpos, ng.GetName(wpos.GetHashCode()), east: sector);
                             //west.Race = GetRace(v);
-                            west.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
-                            if (!Sectors.ContainsKey(wpos))
+                            if (Sectors.TryAdd(wpos, west))
                             {
+                                west.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
                                 RandomDangerLever(west);
                                 sector.WestGate = west;
                                 queue.Enqueue(west);
-                                Sectors.Add(wpos, west);
                                 n = new Node(wpos);
                                 _graph.AddNode(n);
                                 arc = new Arc(currentNode, n, avoidDanger ? sector.WestGate.DangerLevel : 1);
@@ -223,15 +199,14 @@ namespace Common
                         if (v > chanced)
                         {
                             Point3D epos = new Point3D(sector.Position.X + 1, sector.Position.Y, 0);
-                            Sector east = new Sector(epos, ng.NextName, west: sector);
+                            Sector east = new Sector(epos, ng.GetName(epos.GetHashCode()), west: sector);
                             //east.Race = GetRace(v);
-                            east.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
-                            if (!Sectors.ContainsKey(epos))
+                            if (Sectors.TryAdd(epos, east))
                             {
+                                east.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
                                 RandomDangerLever(east);
                                 sector.EastGate = east;
                                 queue.Enqueue(east);
-                                Sectors.Add(epos, east);
                                 n = new Node(epos);
                                 _graph.AddNode(n);
                                 arc = new Arc(currentNode, n, avoidDanger ? sector.EastGate.DangerLevel : 1);
@@ -261,12 +236,12 @@ namespace Common
             });
         }
 
-        public Node[] FindPath(Node start, Node end)
+        public Node[] FindPath(Node start, Node end, bool ignoreWeight)
         {
             AStar a = new AStar(_graph);
             if (start != null && end != null)
             {
-                if (a.SearchPath(start, end))
+                if (a.SearchPath(start, end, ignoreWeight))
                 {
                     return a.PathByNodes;
                 }
@@ -274,12 +249,12 @@ namespace Common
             return null;
         }
 
-        public List<Sector> FindPath(Point3D start, Point3D end)
+        public List<Sector> FindPath(Point3D start, Point3D end, bool ignoreWeight)
         {
             List<Sector> result = new List<Sector>();
             Node startNode = Graph.NodesDictionary[start];
             Node endNode = Graph.NodesDictionary[end];
-            Node[] nodes = FindPath(startNode, endNode);
+            Node[] nodes = FindPath(startNode, endNode, ignoreWeight);
             foreach (Node n in nodes)
             {
                 result.Add(Sectors[n.Position]);
@@ -303,10 +278,11 @@ namespace Common
 
         public void RandomDangerLever(Sector sector)
         {
-            if (rnd.Next(100) < 20)
+            if (GetXYNoise(sector.X, sector.Y) > 100)
             {
-                sector.DangerLevel = rnd.Next(100);
+                sector.DangerLevel = (int)GetXYNoise2(sector.X, sector.Y);
             }
+            
         }
 
         public static uint BitRotate(uint x)
@@ -327,7 +303,22 @@ namespace Common
                 num = num * 673 + (uint)i;
                 num = BitRotate(num);
             }
-            return num % 3;
+            return num % 200;
+        }
+
+        public static uint GetXYNoise2(int x, int y)
+        {
+            UInt32 num = 5743537;
+            for (uint i = 0; i < 16; i++)
+            {
+                num = num * 541 + (uint)x;
+                num = BitRotate(num);
+                num = num * 809 + (uint)y;
+                num = BitRotate(num);
+                num = num * 673 + (uint)i;
+                num = BitRotate(num);
+            }
+            return num % 100;
         }
 
         public Race GetRace(double val)
@@ -347,7 +338,7 @@ namespace Common
             if (val <= 0.8)
                 return Race.Xenon;
             return Race.None;
-        }
+        }        
     }
 }
 

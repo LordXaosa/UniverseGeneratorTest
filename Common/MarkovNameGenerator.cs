@@ -58,8 +58,8 @@ namespace Common
         {
             string s = "";
             Random rnd = new Random(seed);
-            do
-            {
+            /*do
+            {*/
                 
                 int n = rnd.Next(_samples.Count);
                 int nameLength = _samples[n].Length;
@@ -67,7 +67,7 @@ namespace Common
                 while (s.Length < nameLength)
                 {
                     string token = s.Substring(s.Length - _order, _order);
-                    char c = GetLetter(token);
+                    char c = GetLetter(token, rnd);
                     if (c != '?')
                         s += c;//GetLetter(token);
                     else
@@ -93,9 +93,9 @@ namespace Common
                 }
                 else
                     s = s.Substring(0, 1) + s.Substring(1).ToLower();
-            }
+            /*}
             while (_used.Contains(s) || s.Length < _minLength);
-            _used.Add(s);
+            _used.Add(s);*/
             return s;
         }
 
@@ -114,12 +114,12 @@ namespace Common
         private int _minLength;
 
         //Get a random letter from the chain
-        private char GetLetter(string token)
+        private char GetLetter(string token, Random rnd)
         {
             if (!_chains.ContainsKey(token))
                 return '?';
             List<char> letters = _chains[token];
-            int n = _rnd.Next(letters.Count);
+            int n = rnd.Next(letters.Count);
             return letters[n];
         }
     }

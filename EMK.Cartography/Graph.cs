@@ -12,7 +12,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using EMK.LightGeometry;
-
+using System.Collections.Concurrent;
 
 namespace EMK.Cartography
 {
@@ -25,7 +25,7 @@ namespace EMK.Cartography
 	{
 		List<Node> LN;
         //HashSet<Node> LNH;
-        Dictionary<Point3D, Node> NodesDict;
+        ConcurrentDictionary<Point3D, Node> NodesDict;
         List<Arc> LA;
         HashSet<Arc> LAH;
         //Dictionary<Arc, Arc> ArcsDict;
@@ -38,7 +38,7 @@ namespace EMK.Cartography
             LA = new List<Arc>();
             //LNH = new HashSet<Node>();
             LAH = new HashSet<Arc>();
-            NodesDict = new Dictionary<Point3D, Node>();
+            NodesDict = new ConcurrentDictionary<Point3D, Node>();
             //ArcsDict = new Dictionary<Arc, Arc>();
 		}
 
@@ -52,7 +52,7 @@ namespace EMK.Cartography
 		/// </summary>
         public List<Arc> Arcs { get { return LA; } }
 
-        public Dictionary<Point3D, Node> NodesDictionary { get { return NodesDict; } }
+        public ConcurrentDictionary<Point3D, Node> NodesDictionary { get { return NodesDict; } }
 
 
 		/// <summary>
@@ -75,9 +75,9 @@ namespace EMK.Cartography
 		/// <returns>'true' if it has actually been added / 'false' if the node is null or if it is already in the graph.</returns>
 		public bool AddNode(Node NewNode)
 		{
-            if(!NodesDict.ContainsKey(NewNode.Position))
+            if(NodesDict.TryAdd(NewNode.Position, NewNode))
 		    {
-                NodesDict.Add(NewNode.Position, NewNode);
+                //NodesDict.Add(NewNode.Position, NewNode);
                 LN.Add(NewNode);
                 return true;
 		    }
@@ -164,7 +164,8 @@ namespace EMK.Cartography
 				}
 				LN.Remove(NodeToRemove);
                 //LNH.Remove(NodeToRemove);
-                NodesDict.Remove(NodeToRemove.Position);
+                Node n;
+                NodesDict.TryRemove(NodeToRemove.Position, out n);
 			}
 			catch { return false; }
 			return true;

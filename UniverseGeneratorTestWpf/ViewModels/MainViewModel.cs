@@ -132,7 +132,7 @@ namespace UniverseGeneratorTestWpf
         
         async void GenerateUniverse()
         {
-            await universe.GenerateUniverse(100000, true, 0.0d);
+            await universe.GenerateUniverse(10000, true, 0.00d);
             MinX = universe.MinX;
             MinY = universe.MinY;
             MaxX = universe.MaxX;
