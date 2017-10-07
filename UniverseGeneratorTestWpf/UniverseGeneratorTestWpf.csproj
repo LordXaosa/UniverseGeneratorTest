@@ -67,10 +67,14 @@
     <Compile Include="Helpers\PriorityQueue.cs" />
     <Compile Include="Helpers\RectExtensions.cs" />
     <Compile Include="Helpers\VirtualPanel.cs" />
+    <Compile Include="ViewModels\UserWaitableViewModel.cs" />
     <Compile Include="Views\Components\OutlinedTextBlock.cs" />
     <Compile Include="Views\Components\ZoomableCanvas.cs" />
     <Compile Include="Views\Components\CanvasAutoSize.cs" />
     <Compile Include="Views\Components\MultipleItemsListView.cs" />
+    <Compile Include="Views\ProgressControl.xaml.cs">
+      <DependentUpon>ProgressControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\SectorItemView.xaml.cs">
       <DependentUpon>SectorItemView.xaml</DependentUpon>
     </Compile>
@@ -88,6 +92,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Views\ProgressControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\SectorItemView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

@@ -7,70 +7,73 @@
         xmlns:views="clr-namespace:UniverseGeneratorTestWpf.Views"
         xmlns:conv="clr-namespace:UniverseGeneratorTestWpf.Converters"
         xmlns:components="clr-namespace:UniverseGeneratorTestWpf.Views.Components"
-        xmlns:sys="clr-namespace:System;assembly=mscorlib"
-        xmlns:controls="Zooma"
-        mc:Ignorable="d"
         Title="MainWindow" x:Name="Main" WindowState="Maximized">
     <Window.Resources>
         <conv:MultiplierConverter x:Key="mulConv"/>
         <conv:MaxMultiplierConverter x:Key="maxMulConv"/>
     </Window.Resources>
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition></ColumnDefinition>
-            <ColumnDefinition Width="250"></ColumnDefinition>
-        </Grid.ColumnDefinitions>
-        <components:MultipleItemsListView x:Name="MyListBox" ItemsSource="{Binding Sectors}" SelectedItem="{Binding SelectedSector}" CustomSelectedItems="{Binding SelectedSectors, Mode=TwoWay}"  PreviewMouseMove="ZoomableCanvas_PreviewMouseMove" PreviewMouseWheel="ZoomableCanvas_PreviewMouseWheel">
-            <components:MultipleItemsListView.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <!--<components:CanvasAutoSize>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition></ColumnDefinition>
+                <ColumnDefinition Width="250"></ColumnDefinition>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <components:MultipleItemsListView Grid.RowSpan="3" x:Name="MyListBox" ItemsSource="{Binding Sectors}" SelectedItem="{Binding SelectedSector}" CustomSelectedItems="{Binding SelectedSectors, Mode=TwoWay}"  PreviewMouseMove="ZoomableCanvas_PreviewMouseMove" PreviewMouseWheel="ZoomableCanvas_PreviewMouseWheel">
+                <components:MultipleItemsListView.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <!--<components:CanvasAutoSize>
                         <Canvas.CacheMode>
                             <BitmapCache EnableClearType="False" RenderAtScale="10" SnapsToDevicePixels="False" />
                         </Canvas.CacheMode>
                     </components:CanvasAutoSize>-->
-                    <components:ZoomableCanvas RealizationLimit="5000"
+                        <components:ZoomableCanvas RealizationLimit="5000"
                         RealizationRate="20"
                         RealizationPriority="Input"
                         Loaded="ZoomableCanvas_Loaded"/>
-                </ItemsPanelTemplate>
-            </components:MultipleItemsListView.ItemsPanel>
-            <!--<components:MultipleItemsListView.ItemTemplate>
+                    </ItemsPanelTemplate>
+                </components:MultipleItemsListView.ItemsPanel>
+                <!--<components:MultipleItemsListView.ItemTemplate>
                 <DataTemplate>
                     <views:SectorItemView/>
                 </DataTemplate>
             </components:MultipleItemsListView.ItemTemplate>-->
-            <components:MultipleItemsListView.ItemContainerStyle>
-                <Style TargetType="ListBoxItem">
+                <components:MultipleItemsListView.ItemContainerStyle>
+                    <Style TargetType="ListBoxItem">
 
-                    <Setter Property="Canvas.Left">
-                        <Setter.Value>
-                            <MultiBinding Converter="{StaticResource mulConv}" ConverterParameter="{StaticResource Multiplier}">
-                                <Binding Path="X"/>
-                                <Binding Path="DataContext.MinX" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=Window}"/>
-                            </MultiBinding>
-                        </Setter.Value>
-                    </Setter>
-                    <Setter Property="Canvas.Top">
-                        <Setter.Value>
-                            <MultiBinding Converter="{StaticResource mulConv}" ConverterParameter="{StaticResource Multiplier}">
-                                <Binding Path="Y"/>
-                                <Binding Path="DataContext.MinY" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=Window}"/>
-                            </MultiBinding>
-                        </Setter.Value>
-                    </Setter>
+                        <Setter Property="Canvas.Left">
+                            <Setter.Value>
+                                <MultiBinding Converter="{StaticResource mulConv}" ConverterParameter="{StaticResource Multiplier}">
+                                    <Binding Path="X"/>
+                                    <Binding Path="DataContext.MinX" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=Window}"/>
+                                </MultiBinding>
+                            </Setter.Value>
+                        </Setter>
+                        <Setter Property="Canvas.Top">
+                            <Setter.Value>
+                                <MultiBinding Converter="{StaticResource mulConv}" ConverterParameter="{StaticResource Multiplier}">
+                                    <Binding Path="Y"/>
+                                    <Binding Path="DataContext.MinY" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=Window}"/>
+                                </MultiBinding>
+                            </Setter.Value>
+                        </Setter>
 
-                    <Setter Property="VerticalContentAlignment" Value="Top"/>
-                    <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                        <Setter Property="VerticalContentAlignment" Value="Top"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Left"/>
 
-                    <Setter Property="ContentTemplate">
-                        <Setter.Value>
-                            <DataTemplate>
-                                <views:SectorItemView/>
-                            </DataTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-                <!--<Style>
+                        <Setter Property="ContentTemplate">
+                            <Setter.Value>
+                                <DataTemplate>
+                                    <views:SectorItemView/>
+                                </DataTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                    <!--<Style>
                     <Setter Property="Canvas.Left">
                         <Setter.Value>
                             <MultiBinding Converter="{StaticResource mulConv}" ConverterParameter="20">
@@ -88,42 +91,73 @@
                         </Setter.Value>
                     </Setter>
                 </Style>-->
-            </components:MultipleItemsListView.ItemContainerStyle>
-        </components:MultipleItemsListView>
-        <GroupBox Grid.Column="1" Header="Информация о секторе">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="110"></ColumnDefinition>
-                    <ColumnDefinition></ColumnDefinition>
-                </Grid.ColumnDefinitions>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="30"></RowDefinition>
-                    <RowDefinition Height="30"></RowDefinition>
-                    <RowDefinition Height="30"></RowDefinition>
-                    <RowDefinition Height="30"></RowDefinition>
-                    <RowDefinition Height="30"></RowDefinition>
-                    <RowDefinition Height="30"></RowDefinition>
-                    <RowDefinition Height="30"></RowDefinition>
-                    <RowDefinition Height="30"></RowDefinition>
-                </Grid.RowDefinitions>
-                <TextBlock Text="Название:"></TextBlock>
-                <TextBlock Grid.Column="1" Text="{Binding SelectedSector.Name}"></TextBlock>
+                </components:MultipleItemsListView.ItemContainerStyle>
+            </components:MultipleItemsListView>
+            <GroupBox Grid.Column="1" Header="Информация о выбранном секторе">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110"></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30"></RowDefinition>
+                        <RowDefinition Height="30"></RowDefinition>
+                        <RowDefinition Height="30"></RowDefinition>
+                        <RowDefinition Height="30"></RowDefinition>
+                        <RowDefinition Height="30"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="Название:"></TextBlock>
+                    <TextBlock Grid.Column="1" Text="{Binding SelectedSector.Name}"></TextBlock>
 
-                <TextBlock Grid.Row="1" Text="X:"></TextBlock>
-                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedSector.X}"></TextBlock>
+                    <TextBlock Grid.Row="1" Text="X:"></TextBlock>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedSector.X}"></TextBlock>
 
-                <TextBlock Grid.Row="2" Text="Y:"></TextBlock>
-                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedSector.Y}"></TextBlock>
+                    <TextBlock Grid.Row="2" Text="Y:"></TextBlock>
+                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedSector.Y}"></TextBlock>
 
-                <TextBlock Grid.Row="3" Text="Раса:"></TextBlock>
-                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedSector.Race}"></TextBlock>
+                    <TextBlock Grid.Row="3" Text="Раса:"></TextBlock>
+                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedSector.Race}"></TextBlock>
 
-                <TextBlock Grid.Row="4" Text="Уровень опасности:"></TextBlock>
-                <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedSector.DangerLevel}"></TextBlock>
+                    <TextBlock Grid.Row="4" Text="Уровень опасности:"></TextBlock>
+                    <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedSector.DangerLevel}"></TextBlock>
+                </Grid>
+            </GroupBox>
+            <GroupBox Grid.Column="1" Grid.Row="1" Header="Поиск пути">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110"></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30"></RowDefinition>
+                        <RowDefinition Height="30"></RowDefinition>
+                        <RowDefinition Height="30"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="Кол-во секторов:"></TextBlock>
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding PathSectorsCount}"></TextBlock>
 
-                <Button Grid.Row="6" Grid.ColumnSpan="2" Content="Найти путь" Command="{Binding FindWay}"/>
-                <CheckBox Grid.Row="5" Grid.ColumnSpan="2" Content="Кратчайший путь" IsChecked="{Binding SearchFastest}"/>
-            </Grid>
-        </GroupBox>
+                    <CheckBox Grid.Row="1" Grid.ColumnSpan="2" Content="Кратчайший путь" IsChecked="{Binding SearchFastest}"/>
+                    <Button Grid.Row="2" Grid.ColumnSpan="2" Content="Найти путь" Command="{Binding FindWay}"/>
+                </Grid>
+            </GroupBox>
+            <GroupBox Grid.Column="1" Grid.Row="2" Header="Генерация карты">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="110"></ColumnDefinition>
+                        <ColumnDefinition></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="30"></RowDefinition>
+                        <RowDefinition Height="30"></RowDefinition>
+                        <RowDefinition Height="30"></RowDefinition>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="Кол-во циклов генерации:"></TextBlock>
+                    <TextBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding Cycles}"></TextBox>
+
+                    <Button Grid.Row="2" Grid.ColumnSpan="2" Content="Сгенерировать карту" Command="{Binding GenerateMap}"/>
+                </Grid>
+            </GroupBox>
+        </Grid>
+        <views:ProgressControl/>
     </Grid>
 </Window>

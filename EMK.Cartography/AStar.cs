@@ -197,7 +197,7 @@ namespace EMK.Cartography
 
         private void Propagate(Track TrackToPropagate, bool ignoreWeight)
         {
-            foreach (Arc A in TrackToPropagate.EndNode.OutgoingArcs)
+            foreach (Arc A in TrackToPropagate.EndNode.OutgoingArcsHash)
             {
                 if (A.Passable && A.EndNode.Passable)
                 {

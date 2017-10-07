@@ -13,6 +13,7 @@ using System.Collections;
 using System.Collections.Generic;
 using EMK.LightGeometry;
 using System.Collections.Concurrent;
+using System.Linq;
 
 namespace EMK.Cartography
 {
@@ -23,34 +24,26 @@ namespace EMK.Cartography
 	[Serializable]
 	public class Graph
 	{
-		List<Node> LN;
-        //HashSet<Node> LNH;
         ConcurrentDictionary<Point3D, Node> NodesDict;
-        List<Arc> LA;
-        HashSet<Arc> LAH;
-        //Dictionary<Arc, Arc> ArcsDict;
+        ConcurrentDictionary<Arc, Arc> LAH;
         /// <summary>
         /// Constructor.
         /// </summary>
         public Graph()
 		{
-            LN = new List<Node>();
-            LA = new List<Arc>();
-            //LNH = new HashSet<Node>();
-            LAH = new HashSet<Arc>();
+            LAH = new ConcurrentDictionary<Arc, Arc>();
             NodesDict = new ConcurrentDictionary<Point3D, Node>();
-            //ArcsDict = new Dictionary<Arc, Arc>();
 		}
 
 		/// <summary>
 		/// Gets the List interface of the nodes in the graph.
 		/// </summary>
-        public List<Node> Nodes { get { return LN; } }
+        public List<Node> Nodes { get { return NodesDictionary.Values.ToList(); } }
 
 		/// <summary>
 		/// Gets the List interface of the arcs in the graph.
 		/// </summary>
-        public List<Arc> Arcs { get { return LA; } }
+        public List<Arc> Arcs { get { return LAH.Values.ToList(); } }
 
         public ConcurrentDictionary<Point3D, Node> NodesDictionary { get { return NodesDict; } }
 
@@ -60,11 +53,7 @@ namespace EMK.Cartography
 		/// </summary>
 		public void Clear()
 		{
-			LN.Clear();
-			LA.Clear();
             NodesDict.Clear();
-            //ArcsDict.Clear();
-            //LNH.Clear();
             LAH.Clear();
 		}
 
@@ -75,13 +64,7 @@ namespace EMK.Cartography
 		/// <returns>'true' if it has actually been added / 'false' if the node is null or if it is already in the graph.</returns>
 		public bool AddNode(Node NewNode)
 		{
-            if(NodesDict.TryAdd(NewNode.Position, NewNode))
-		    {
-                //NodesDict.Add(NewNode.Position, NewNode);
-                LN.Add(NewNode);
-                return true;
-		    }
-            return false;
+            return NodesDict.TryAdd(NewNode.Position, NewNode);
 		}
 
 		/// <summary>
@@ -105,12 +88,7 @@ namespace EMK.Cartography
 		/// <returns>'true' if it has actually been added / 'false' if the arc is null or if it is already in the graph.</returns>
 		public bool AddArc(Arc NewArc)
 		{
-		    if (LAH.Add(NewArc))
-		    {
-		        LA.Add(NewArc);
-                return true;
-		    }
-			return false;
+            return LAH.TryAdd(NewArc, NewArc);
 		}
 
 		/// <summary>
@@ -150,20 +128,17 @@ namespace EMK.Cartography
 			if ( NodeToRemove==null ) return false;
 			try
 			{
-				foreach ( Arc A in NodeToRemove.IncomingArcs )
+                Arc a;
+				foreach ( Arc A in NodeToRemove.IncomingArcsHash )
 				{
-					A.StartNode.OutgoingArcs.Remove(A);
-					LA.Remove(A);
-				    LAH.Remove(A);
+					A.StartNode.OutgoingArcsHash.Remove(A);
+                    LAH.TryRemove(A, out a);
 				}
-				foreach ( Arc A in NodeToRemove.OutgoingArcs )
+				foreach ( Arc A in NodeToRemove.OutgoingArcsHash )
 				{
-					A.EndNode.IncomingArcs.Remove(A);
-					LA.Remove(A);
-                    LAH.Remove(A);
-				}
-				LN.Remove(NodeToRemove);
-                //LNH.Remove(NodeToRemove);
+					A.EndNode.IncomingArcsHash.Remove(A);
+                    LAH.TryRemove(A, out a);
+                }
                 Node n;
                 NodesDict.TryRemove(NodeToRemove.Position, out n);
 			}
@@ -181,10 +156,10 @@ namespace EMK.Cartography
 			if ( ArcToRemove==null ) return false;
 			try
 			{
-				LA.Remove(ArcToRemove);
-                LAH.Remove(ArcToRemove);
-				ArcToRemove.StartNode.OutgoingArcs.Remove(ArcToRemove);
-				ArcToRemove.EndNode.IncomingArcs.Remove(ArcToRemove);
+                Arc a;
+                LAH.TryRemove(ArcToRemove, out a);
+				ArcToRemove.StartNode.OutgoingArcsHash.Remove(ArcToRemove);
+				ArcToRemove.EndNode.IncomingArcsHash.Remove(ArcToRemove);
 			}
 			catch { return false; }
 			return true;
@@ -220,7 +195,7 @@ namespace EMK.Cartography
 			Node NodeMin = null;
 			double DistanceMin = -1;
 			Point3D P = new Point3D(PtX, PtY, PtZ);
-			foreach ( Node N in LN )
+			foreach ( Node N in Nodes )
 			{
 				if ( IgnorePassableProperty && N.Passable==false ) continue;
 				double DistanceTemp = Point3D.DistanceBetween(N.Position, P);
@@ -248,7 +223,7 @@ namespace EMK.Cartography
 			Arc ArcMin = null;
 			double DistanceMin = -1;
 			Point3D P = new Point3D(PtX, PtY, PtZ);
-			foreach ( Arc A in LA )
+			foreach ( Arc A in Arcs )
 			{
 				if ( IgnorePassableProperty && A.Passable==false ) continue;
 				Point3D Projection = Point3D.ProjectOnLine(P, A.StartNode.Position, A.EndNode.Position);

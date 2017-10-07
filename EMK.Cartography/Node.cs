@@ -12,6 +12,8 @@ using System;
 using System.Collections;
 using EMK.LightGeometry;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
+using System.Linq;
 
 namespace EMK.Cartography
 {
@@ -24,7 +26,9 @@ namespace EMK.Cartography
 	{
 		Point3D _Position;
 		bool _Passable;
-		List<Arc> _IncomingArcs, _OutgoingArcs;
+		//List<Arc> _IncomingArcs, _OutgoingArcs;
+        //ConcurrentDictionary<Arc, Arc> _IncomingArcsHash, _OutgoingArcsHash;
+        HashSet<Arc> _IncomingArcsHash, _OutgoingArcsHash;
         public static int count=0;
         /// <summary>
         /// Constructor.
@@ -39,29 +43,34 @@ namespace EMK.Cartography
         {
             _Position = position;
             _Passable = true;
-            _IncomingArcs = new List<Arc>();
-            _OutgoingArcs = new List<Arc>();
+            //_IncomingArcs = new List<Arc>();
+            //_OutgoingArcs = new List<Arc>();
+            _IncomingArcsHash = new HashSet<Arc>();
+            _OutgoingArcsHash = new HashSet<Arc>();
         }
 
 		/// <summary>
 		/// Gets the list of the arcs that lead to this node.
 		/// </summary>
-		public List<Arc> IncomingArcs { get { return _IncomingArcs; } }
+		public List<Arc> IncomingArcs { get { return _IncomingArcsHash.ToList(); } }
 
 		/// <summary>
 		/// Gets the list of the arcs that start from this node.
 		/// </summary>
-		public List<Arc> OutgoingArcs { get { return _OutgoingArcs; } }
+		public List<Arc> OutgoingArcs { get { return _OutgoingArcsHash.ToList(); } }
 
-		/// Gets/Sets the functional state of the node.
-		/// 'true' means that the node is in its normal state.
-		/// 'false' means that the node will not be taken into account (as if it did not exist).
-		public bool Passable
+        public HashSet<Arc> IncomingArcsHash { get { return _IncomingArcsHash; } }
+        public HashSet<Arc> OutgoingArcsHash { get { return _OutgoingArcsHash; } }
+
+        /// Gets/Sets the functional state of the node.
+        /// 'true' means that the node is in its normal state.
+        /// 'false' means that the node will not be taken into account (as if it did not exist).
+        public bool Passable
 		{
 			set
 			{
-				foreach (Arc A in _IncomingArcs) A.Passable = value;
-				foreach (Arc A in _OutgoingArcs) A.Passable = value;
+				foreach (Arc A in _IncomingArcsHash) A.Passable = value;
+				foreach (Arc A in _OutgoingArcsHash) A.Passable = value;
 				_Passable = value;
 			}
 			get { return _Passable; }		
@@ -102,8 +111,8 @@ namespace EMK.Cartography
 			set
 			{
 				if ( value==null ) throw new ArgumentNullException();
-				foreach (Arc A in _IncomingArcs) A.LengthUpdated = false;
-				foreach (Arc A in _OutgoingArcs) A.LengthUpdated = false;
+				foreach (Arc A in _IncomingArcsHash) A.LengthUpdated = false;
+				foreach (Arc A in _OutgoingArcsHash) A.LengthUpdated = false;
 				_Position = value;
 			}
 			get { return _Position; }
@@ -116,9 +125,9 @@ namespace EMK.Cartography
 		{
 			get
 			{
-				Node[] Tableau = new Node[_OutgoingArcs.Count];
+				Node[] Tableau = new Node[_OutgoingArcsHash.Count];
 				int i=0;
-				foreach (Arc A in OutgoingArcs) Tableau[i++] = A.EndNode;
+				foreach (Arc A in OutgoingArcsHash) Tableau[i++] = A.EndNode;
 				return Tableau;
 			}
 		}
@@ -130,9 +139,9 @@ namespace EMK.Cartography
 		{
 			get
 			{
-				Node[] Tableau = new Node[_IncomingArcs.Count];
+				Node[] Tableau = new Node[_IncomingArcsHash.Count];
 				int i=0;
-				foreach (Arc A in IncomingArcs) Tableau[i++] = A.StartNode;
+				foreach (Arc A in IncomingArcsHash) Tableau[i++] = A.StartNode;
 				return Tableau;
 			}
 		}
@@ -144,12 +153,12 @@ namespace EMK.Cartography
 		{
 			get
 			{
-				int NbNodes = 1+_OutgoingArcs.Count+_IncomingArcs.Count;
+				int NbNodes = 1+_OutgoingArcsHash.Count+_IncomingArcsHash.Count;
 				Node[] Tableau = new Node[NbNodes];
 				Tableau[0] = this;
 				int i=1;
-				foreach (Arc A in OutgoingArcs) Tableau[i++] = A.EndNode;
-				foreach (Arc A in IncomingArcs) Tableau[i++] = A.StartNode;
+				foreach (Arc A in OutgoingArcsHash) Tableau[i++] = A.EndNode;
+				foreach (Arc A in IncomingArcsHash) Tableau[i++] = A.StartNode;
 				return Tableau;
 			}
 		}
@@ -168,9 +177,9 @@ namespace EMK.Cartography
 		/// </summary>
 		public void UntieIncomingArcs()
 		{
-			foreach (Arc A in _IncomingArcs)
-				A.StartNode.OutgoingArcs.Remove(A);
-			_IncomingArcs.Clear();
+			foreach (Arc A in _IncomingArcsHash)
+				A.StartNode.OutgoingArcsHash.Remove(A);
+			_IncomingArcsHash.Clear();
 		}
 
 		/// <summary>
@@ -178,9 +187,9 @@ namespace EMK.Cartography
 		/// </summary>
 		public void UntieOutgoingArcs()
 		{
-			foreach (Arc A in _OutgoingArcs)
-				A.EndNode.IncomingArcs.Remove(A);
-			_OutgoingArcs.Clear();
+			foreach (Arc A in _OutgoingArcsHash)
+				A.EndNode.IncomingArcsHash.Remove(A);
+			_OutgoingArcsHash.Clear();
 		}
 
 		/// <summary>
@@ -192,7 +201,7 @@ namespace EMK.Cartography
 		public Arc ArcGoingTo(Node N)
 		{
 			if ( N==null ) throw new ArgumentNullException();
-			foreach (Arc A in _OutgoingArcs)
+			foreach (Arc A in _OutgoingArcsHash)
 				if (A.EndNode == N) return A;
 			return null;
 		}
@@ -206,15 +215,15 @@ namespace EMK.Cartography
 		public Arc ArcComingFrom(Node N)
 		{
 			if ( N==null ) throw new ArgumentNullException();
-			foreach (Arc A in _IncomingArcs)
+			foreach (Arc A in _IncomingArcsHash)
 				if (A.StartNode == N) return A;
 			return null;
 		}
 		
 		void Invalidate()
 		{
-			foreach (Arc A in _IncomingArcs) A.LengthUpdated = false;
-			foreach (Arc A in _OutgoingArcs) A.LengthUpdated = false;
+			foreach (Arc A in _IncomingArcsHash) A.LengthUpdated = false;
+			foreach (Arc A in _OutgoingArcsHash) A.LengthUpdated = false;
 		}
 
 		/// <summary>

@@ -63,7 +63,7 @@ namespace EMK.Cartography
 			}
 		}
         //bool _ignoreWeight;
-		public bool Succeed { get { return EndNode==_Target; } }
+		public bool Succeed { get { return EndNode.Equals(_Target); } }
 
 		public Track(Node GraphNode)
 		{
@@ -94,13 +94,13 @@ namespace EMK.Cartography
 			Track P1 = O1 as Track;
 			Track P2 = O2 as Track;
 			if ( P1==null || P2==null ) throw new ArgumentException("Objects must be of 'Track' type.");
-			return P1.EndNode==P2.EndNode;
+			return P1.EndNode.Equals(P2.EndNode);
 		}
 
         public override bool Equals(object obj)
         {
             Track t = obj as Track;
-            return t != null && t.EndNode == EndNode;
+            return t != null && t.EndNode.Equals(EndNode);
         }
 
         public override int GetHashCode()

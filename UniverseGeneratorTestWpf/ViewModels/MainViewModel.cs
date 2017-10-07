@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using UniverseGeneratorTestWpf.Helpers;
 
-namespace UniverseGeneratorTestWpf
+namespace UniverseGeneratorTestWpf.ViewModels
 {
-    public class MainViewModel : NotifyPropertyChanged
+    public class MainViewModel : UserWaitableViewModel
     {
         Universe universe;
         int _minX;
@@ -120,19 +120,44 @@ namespace UniverseGeneratorTestWpf
             }
         }
 
+        private int _pathSectorsCount;
+        public int PathSectorsCount
+        {
+            get { return _pathSectorsCount; }
+            set
+            {
+                _pathSectorsCount = value;
+                RaisePropertyChanged();
+            }
+        }
+
+        private int _cycles;
+        public int Cycles
+        {
+            get { return _cycles; }
+            set
+            {
+                _cycles = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public ICommand FindWay { get; set; }
+        public ICommand GenerateMap { get; set; }
 
         public MainViewModel()
         {
             SelectedSectors = new List<Sector>();
             universe = new Universe();
             FindWay = new Command(FindWayCmd, ()=>SelectedSectors?.Count == 2);
-            GenerateUniverse();
+            GenerateMap = new Command(GenerateUniverse);
+            //GenerateUniverse();
         }
         
         async void GenerateUniverse()
         {
-            await universe.GenerateUniverse(10000, true, 0.00d);
+            IsInProgress = true;
+            await universe.GenerateUniverse(Cycles, true, 0.00d);
             MinX = universe.MinX;
             MinY = universe.MinY;
             MaxX = universe.MaxX;
@@ -141,6 +166,7 @@ namespace UniverseGeneratorTestWpf
             TotalY = -MinY + MaxY + 1;
             Sectors = new GridLikeItemsSource(universe.Sectors.Values.ToList(), MinX, MinY, MaxX, MaxY, 50);
             Sectors.Count = universe.Sectors.Count;
+            IsInProgress = false;
         }
 
         void FindWayCmd()
@@ -150,6 +176,7 @@ namespace UniverseGeneratorTestWpf
             Point3D end = SelectedSectors[1].Position;
             List<Sector> sectorsToHighlight = universe.FindPath(start, end, SearchFastest);
             List<Point3D> positions = sectorsToHighlight.Select(p => p.Position).ToList();
+            PathSectorsCount = positions.Count;
             foreach(Point3D pos in positions)
             {
                 universe.Sectors[pos].IsRoute = true;

@@ -9,7 +9,7 @@
 // LIABILITY FOR ANY DATA DAMAGE/LOSS THAT THIS PRODUCT MAY CAUSE.
 //-----------------------------------------------------------------------
 using System;
-
+using System.Text;
 
 namespace EMK.LightGeometry
 {
@@ -139,6 +139,16 @@ namespace EMK.LightGeometry
         public override int GetHashCode()
         {
             return unchecked(X.GetHashCode() ^ Y.GetHashCode() ^ Z.GetHashCode());
+            /*unchecked
+            {
+                int hash = 1;
+                // Suitable nullity checks etc, of course :)
+                hash = hash * 83 + X.GetHashCode()>>Y.GetHashCode();
+                hash = hash * 83 + Y.GetHashCode()<<Y.GetHashCode();
+                hash = hash * 83 + Z.GetHashCode();
+                return hash;
+            }*/
+            //return ToString().GetHashCode();
         }
 
         /// <summary>
@@ -156,6 +166,16 @@ namespace EMK.LightGeometry
             for (int i = 0; i < Dimension; i++)
                 Resultat += _Coordinates[i].ToString() + (i != Dimension - 1 ? Sep : Fin);
             return Resultat;
+            /*StringBuilder sb = new StringBuilder();
+            sb.Append("{");
+            sb.Append(X);
+            sb.Append(",");
+            sb.Append(Y);
+            sb.Append(",");
+            sb.Append(Z);
+            sb.Append("}");
+            return sb.ToString();*/
+
         }
     }
 }
