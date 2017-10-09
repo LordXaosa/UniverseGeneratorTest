@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using UniverseGeneratorTestWpf.Helpers;
 
@@ -146,11 +147,11 @@ namespace UniverseGeneratorTestWpf.ViewModels
         {
             SelectedSectors = new List<Sector>();
             universe = new Universe();
-            FindWay = new Command(FindWayCmd, ()=>SelectedSectors?.Count == 2);
+            FindWay = new Command(FindWayCmd, () => SelectedSectors?.Count == 2);
             GenerateMap = new Command(GenerateUniverse);
             //GenerateUniverse();
         }
-        
+
         async void GenerateUniverse()
         {
             IsInProgress = true;
@@ -166,12 +167,17 @@ namespace UniverseGeneratorTestWpf.ViewModels
             IsInProgress = false;
         }
 
-        void FindWayCmd()
+        async void FindWayCmd()
         {
-            universe.Sectors.AsParallel().ForAll(p => p.Value.IsRoute = false);
-            List<Sector> sectorsToHighlight = universe.FindPath(SelectedSectors[0], SelectedSectors[1], SearchFastest);
-            sectorsToHighlight.AsParallel().ForAll(p => p.IsRoute = true);
-            PathSectorsCount = sectorsToHighlight.Count;
+            IsInProgress = true;
+            await Task.Factory.StartNew(() =>
+            {
+                universe.Sectors.AsParallel().ForAll(p => p.Value.IsRoute = false);
+                List<Sector> sectorsToHighlight = universe.FindPath(SelectedSectors[0], SelectedSectors[1], SearchFastest);
+                sectorsToHighlight.AsParallel().ForAll(p => p.IsRoute = true);
+                PathSectorsCount = sectorsToHighlight.Count;
+            });
+            IsInProgress = false;
         }
     }
 }

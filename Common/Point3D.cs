@@ -131,7 +131,12 @@ namespace Common
         /// <returns>HashCode value.</returns>
         public override int GetHashCode()
         {
-            return unchecked(X.GetHashCode() ^ Y.GetHashCode() ^ Z.GetHashCode());
+            //return unchecked(X.GetHashCode() ^ Y.GetHashCode() ^ Z.GetHashCode());
+            double res = X+45.47543278721;
+            res = 31 * res + Y;
+            res = 37 * res + Z;
+            return res.GetHashCode();
+            //return 1;
         }
 
         /// <summary>

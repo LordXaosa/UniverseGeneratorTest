@@ -8,6 +8,7 @@
 // EXPRESS OR IMPLIED. USE IT AT YOUR OWN RISK. THE AUTHOR ACCEPTS NO
 // LIABILITY FOR ANY DATA DAMAGE/LOSS THAT THIS PRODUCT MAY CAUSE.
 //-----------------------------------------------------------------------
+using Priority_Queue;
 using System;
 
 
@@ -18,7 +19,7 @@ namespace Common
     /// Thus when it leads to the target node, it is easy to return the result path.
     /// These objects are contained in Open and Closed lists.
     /// </summary>
-    internal class Track : IComparable<Track>
+    internal class Track : FastPriorityQueueNode, IComparable<Track>
 	{
         private Sector _target = null;
         private static double _Coeff = 0.5;

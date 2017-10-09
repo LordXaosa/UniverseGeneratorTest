@@ -44,7 +44,7 @@
         {
             Sector s = obj as Sector;
             if (s == null) return false;
-            return this.Position.Equals(s.Position);
+            return Position.Equals(s.Position);
         }
     }
     public enum Race

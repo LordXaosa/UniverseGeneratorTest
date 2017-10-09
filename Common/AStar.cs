@@ -8,11 +8,9 @@
 // EXPRESS OR IMPLIED. USE IT AT YOUR OWN RISK. THE AUTHOR ACCEPTS NO
 // LIABILITY FOR ANY DATA DAMAGE/LOSS THAT THIS PRODUCT MAY CAUSE.
 //-----------------------------------------------------------------------
-using EMK.Collections;
+using Priority_Queue;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace Common
 {
@@ -27,13 +25,12 @@ namespace Common
     /// </summary>
     public class AStar
     {
-        SortableList<Track> _Open;
+        //SortableList<Track> _Open;
+        FastPriorityQueue<Track> _Open;
         ConcurrentDictionary<Track, Track> _open, _closed;
         Track _LeafToGoBackUp;
         int _NbIterations = -1;
         ConcurrentDictionary<Point3D, Sector> _sectors;
-
-        SortableList<Track>.Equality SameNodesReached = new SortableList<Track>.Equality(Track.SameEndNode);
 
         public static double EuclidianDistance(Sector S1, Sector S2)
         {
@@ -117,7 +114,8 @@ namespace Common
         public AStar(ConcurrentDictionary<Point3D, Sector> sectors)
         {
             _sectors = sectors;
-            _Open = new SortableList<Track>();
+            //_Open = new SortableList<Track>();
+            _Open = new FastPriorityQueue<Track>(sectors.Count);
             _open = new ConcurrentDictionary<Track, Track>();
             _closed = new ConcurrentDictionary<Track, Track>();
             ChoosenHeuristic = EuclidianHeuristic;
@@ -157,7 +155,7 @@ namespace Common
             _closed.Clear();
             //Track.Target = EndNode;
             Track start = new Track(StartSector, EndSector);
-            _Open.Add(start);
+            _Open.Enqueue(start, (float)start.Evaluation);
             _open.TryAdd(start, start);
             _NbIterations = 0;
             _LeafToGoBackUp = null;
@@ -175,10 +173,10 @@ namespace Common
             if (_Open.Count == 0) return false;
             _NbIterations++;
 
-            int IndexMin = _Open.IndexOfMin();
-            Track BestTrack = (Track)_Open[IndexMin];
+            //int IndexMin = _Open.IndexOfMin();
+            Track BestTrack = _Open.Dequeue();
             Track s;
-            _Open.RemoveAt(IndexMin);
+            //_Open.RemoveAt(IndexMin);
             _open.TryRemove(BestTrack, out s);
             if (BestTrack.Succeed)
             {
@@ -213,12 +211,12 @@ namespace Common
             if (_open.ContainsKey(Successor))
             {
                 if (Successor.Cost >= _open[Successor].Cost) return;
-                int PosNO = _Open.IndexOf(Successor, SameNodesReached);
+                /*int PosNO = _Open.IndexOf(Successor, SameNodesReached);
                 if (PosNO > 0)
                 {
                     _Open.RemoveAt(PosNO);
                     _open.TryRemove(Successor, out s);
-                }
+                }*/
             }
             if (_closed.ContainsKey(Successor))
             {
@@ -227,7 +225,7 @@ namespace Common
             }
             if (_open.TryAdd(Successor, Successor))
             {
-                _Open.Add(Successor);
+                _Open.Enqueue(Successor, (float)Successor.Evaluation);
             }
         }
 

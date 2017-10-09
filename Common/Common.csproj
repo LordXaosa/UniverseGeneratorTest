@@ -31,6 +31,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Priority Queue, Version=4.1.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\OptimizedPriorityQueue.4.1.1\lib\net45\Priority Queue.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -54,14 +57,13 @@
     <Compile Include="Words.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\EMK.Collections\EMK.Collections.csproj">
-      <Project>{af805d93-49d4-4ddf-aec4-623564be3507}</Project>
-      <Name>EMK.Collections</Name>
-    </ProjectReference>
     <ProjectReference Include="..\LibNoise\LibNoise.csproj">
       <Project>{031c8cff-f147-44ea-b7e5-0a5644808a7e}</Project>
       <Name>LibNoise</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
