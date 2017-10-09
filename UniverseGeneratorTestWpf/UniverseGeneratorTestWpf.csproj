@@ -132,10 +132,6 @@
       <Project>{58FABB7B-1086-4EB5-9DBB-9192179C78E3}</Project>
       <Name>Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\EMK.Cartography\EMK.Cartography.csproj">
-      <Project>{34546EB7-05F2-428F-9B5C-ABB9EC7830C6}</Project>
-      <Name>EMK.Cartography</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

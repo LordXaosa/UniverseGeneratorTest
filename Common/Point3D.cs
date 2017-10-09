@@ -9,9 +9,8 @@
 // LIABILITY FOR ANY DATA DAMAGE/LOSS THAT THIS PRODUCT MAY CAUSE.
 //-----------------------------------------------------------------------
 using System;
-using System.Text;
 
-namespace EMK.LightGeometry
+namespace Common
 {
     /// <summary>
     /// Basic geometry class : easy to replace
@@ -121,14 +120,8 @@ namespace EMK.LightGeometry
         /// <returns>'true' if points are equal.</returns>
         public override bool Equals(object Point)
         {
-            if (!(Point is Point3D)) return false;
+            //if (!(Point is Point3D)) return false;
             Point3D p = (Point3D)Point;
-            /*Point3D P = Point as Point3D;
-		    if (P == null)
-		        return false;
-			bool Resultat = true;
-			for (int i=0; i<3; i++) Resultat &= P[i].Equals(this[i]);
-			return Resultat;*/
             return X == p.X && Y == p.Y && Z == p.Z;
         }
 
@@ -139,16 +132,6 @@ namespace EMK.LightGeometry
         public override int GetHashCode()
         {
             return unchecked(X.GetHashCode() ^ Y.GetHashCode() ^ Z.GetHashCode());
-            /*unchecked
-            {
-                int hash = 1;
-                // Suitable nullity checks etc, of course :)
-                hash = hash * 83 + X.GetHashCode()>>Y.GetHashCode();
-                hash = hash * 83 + Y.GetHashCode()<<Y.GetHashCode();
-                hash = hash * 83 + Z.GetHashCode();
-                return hash;
-            }*/
-            //return ToString().GetHashCode();
         }
 
         /// <summary>
@@ -166,16 +149,6 @@ namespace EMK.LightGeometry
             for (int i = 0; i < Dimension; i++)
                 Resultat += _Coordinates[i].ToString() + (i != Dimension - 1 ? Sep : Fin);
             return Resultat;
-            /*StringBuilder sb = new StringBuilder();
-            sb.Append("{");
-            sb.Append(X);
-            sb.Append(",");
-            sb.Append(Y);
-            sb.Append(",");
-            sb.Append(Z);
-            sb.Append("}");
-            return sb.ToString();*/
-
         }
     }
 }

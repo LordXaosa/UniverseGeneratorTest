@@ -1,12 +1,9 @@
-﻿using EMK.Cartography;
-using EMK.LightGeometry;
-using LibNoise;
+﻿using LibNoise;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Common
@@ -22,7 +19,7 @@ namespace Common
                 _sectors = value;
             }
         }
-        private Graph _graph;
+        /*private Graph _graph;
         public Graph Graph
         {
             get { return _graph; }
@@ -30,14 +27,14 @@ namespace Common
             {
                 _graph = value;
             }
-        }
+        }*/
         Random rnd;
         MarkovNameGenerator ng = new MarkovNameGenerator(Words.WordsCatalogue, 0, 5);
 
         public Universe()
         {
             Sectors = new ConcurrentDictionary<Point3D, Sector>();
-            Graph = new Graph();
+            //Graph = new Graph();
         }
 
         public int MaxY { get; set; }
@@ -49,7 +46,7 @@ namespace Common
         {
             return Task.Run(() =>
             {
-                Graph = new Graph();
+                //Graph = new Graph();
                 rnd = new Random(465845);
                 //PerlinNoise noise = new PerlinNoise(8973454);
                 FastBillow noise = new FastBillow(8973454);
@@ -78,8 +75,8 @@ namespace Common
                     Sector s = new Sector(pos, ng.GetName(pos.GetHashCode()));
                     s.Race = GetRace(biome.GetValue(pos.X, 0, pos.Y));
                     Sectors.TryAdd(pos, s);
-                    Node n = new Node(pos);
-                    _graph.AddNode(n);
+                    //Node n = new Node(pos);
+                    //_graph.AddNode(n);
                     queue.Enqueue(s);
                 }
                 Stopwatch sw = new Stopwatch();
@@ -91,7 +88,7 @@ namespace Common
                 sw.Stop();
                 sw.Reset();
                 sw.Start();
-                AddNodes(Graph, Sectors.Values.ToList(), avoidDanger);
+                //AddNodes(Graph, Sectors.Values.ToList(), avoidDanger);
                 sw.Stop();
                 GC.WaitForPendingFinalizers();
                 GC.Collect();
@@ -102,31 +99,20 @@ namespace Common
             });
         }
 
-        public Node[] FindPath(Node start, Node end, bool ignoreWeight)
+
+
+        public List<Sector> FindPath(Sector start, Sector end, bool ignoreWeight)
         {
-            AStar a = new AStar(_graph);
+            AStar a = new AStar(Sectors);
             //a.ChoosenHeuristic = AStar.EuclidianHeuristic;
             if (start != null && end != null)
             {
                 if (a.SearchPath(start, end, ignoreWeight))
                 {
-                    return a.PathByNodes;
+                    return new List<Sector>(a.PathByNodes);
                 }
             }
             return null;
-        }
-
-        public List<Sector> FindPath(Point3D start, Point3D end, bool ignoreWeight)
-        {
-            List<Sector> result = new List<Sector>();
-            Node startNode = Graph.NodesDictionary[start];
-            Node endNode = Graph.NodesDictionary[end];
-            Node[] nodes = FindPath(startNode, endNode, ignoreWeight);
-            foreach (Node n in nodes)
-            {
-                result.Add(Sectors[n.Position]);
-            }
-            return result;
         }
 
         private double GetSector(PerlinNoise noise, int x, int y)
@@ -215,8 +201,6 @@ namespace Common
                 result = cycles--;
                 if (result <= 0)
                     return;
-                Arc arc;
-                Node n;
                 Sector sector;
                 queue.TryDequeue(out sector);
                 var v = noise.GetValue(sector.X, 0, sector.Y - 1);
@@ -297,57 +281,6 @@ namespace Common
                 }
             });
             return result;
-        }
-
-        public void AddNodes(Graph graph, List<Sector> sectors, bool avoidDanger)
-        {
-            Parallel.ForEach(sectors, (item) =>
-            {
-                Node current = new Node(item.Position);
-                graph.AddNode(current);
-                Node n;
-                if (item.NorthGate != null)
-                {
-                    n = new Node(item.NorthGate.Position);
-                    if (!graph.AddNode(n))
-                    {
-                        n = graph.NodesDictionary[item.NorthGate.Position];
-                    }
-                    graph.AddArc(new Arc(current, n, avoidDanger ? item.NorthGate.DangerLevel : 1));
-                    graph.AddArc(new Arc(n, current, avoidDanger ? item.DangerLevel : 1));
-                }
-                if (item.SouthGate != null)
-                {
-                    n = new Node(item.SouthGate.Position);
-                    if (!graph.AddNode(n))
-                    {
-                        n = graph.NodesDictionary[item.SouthGate.Position];
-                    }
-                    graph.AddArc(new Arc(current, n, avoidDanger ? item.SouthGate.DangerLevel : 1));
-                    graph.AddArc(new Arc(n, current, avoidDanger ? item.DangerLevel : 1));
-                }
-                if (item.WestGate != null)
-                {
-                    n = new Node(item.WestGate.Position);
-                    if (!graph.AddNode(n))
-                    {
-                        n = graph.NodesDictionary[item.WestGate.Position];
-                    }
-                    graph.AddArc(new Arc(current, n, avoidDanger ? item.WestGate.DangerLevel : 1));
-                    graph.AddArc(new Arc(n, current, avoidDanger ? item.DangerLevel : 1));
-                }
-                if (item.EastGate != null)
-                {
-                    n = new Node(item.EastGate.Position);
-                    if (!graph.AddNode(n))
-                    {
-                        n = graph.NodesDictionary[item.EastGate.Position];
-                    }
-                    graph.AddArc(new Arc(current, n, avoidDanger ? item.EastGate.DangerLevel : 1));
-                    graph.AddArc(new Arc(n, current, avoidDanger ? item.DangerLevel : 1));
-                }
-            }
-            );
         }
     }
 }

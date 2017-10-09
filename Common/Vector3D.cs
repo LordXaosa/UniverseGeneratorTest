@@ -9,16 +9,15 @@
 // LIABILITY FOR ANY DATA DAMAGE/LOSS THAT THIS PRODUCT MAY CAUSE.
 //-----------------------------------------------------------------------
 using System;
-using System.Collections;
 
 
-namespace EMK.LightGeometry
+namespace Common
 {
-	/// <summary>
-	/// Basic geometry class : easy to replace
-	/// Written so as to be generalized
-	/// </summary>
-	public class Vector3D
+    /// <summary>
+    /// Basic geometry class : easy to replace
+    /// Written so as to be generalized
+    /// </summary>
+    public class Vector3D
 	{
 		double[] _Coordinates = new double[3];
 

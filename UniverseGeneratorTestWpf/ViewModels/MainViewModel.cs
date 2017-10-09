@@ -1,10 +1,7 @@
 ﻿using Common;
-using EMK.LightGeometry;
-using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 using UniverseGeneratorTestWpf.Helpers;
 
@@ -171,16 +168,10 @@ namespace UniverseGeneratorTestWpf.ViewModels
 
         void FindWayCmd()
         {
-            universe.Sectors.Values.AsParallel<Sector>().ForAll(p => p.IsRoute = false);
-            Point3D start = SelectedSectors[0].Position;
-            Point3D end = SelectedSectors[1].Position;
-            List<Sector> sectorsToHighlight = universe.FindPath(start, end, SearchFastest);
-            List<Point3D> positions = sectorsToHighlight.Select(p => p.Position).ToList();
-            PathSectorsCount = positions.Count;
-            foreach(Point3D pos in positions)
-            {
-                universe.Sectors[pos].IsRoute = true;
-            }
+            universe.Sectors.AsParallel().ForAll(p => p.Value.IsRoute = false);
+            List<Sector> sectorsToHighlight = universe.FindPath(SelectedSectors[0], SelectedSectors[1], SearchFastest);
+            sectorsToHighlight.AsParallel().ForAll(p => p.IsRoute = true);
+            PathSectorsCount = sectorsToHighlight.Count;
         }
     }
 }

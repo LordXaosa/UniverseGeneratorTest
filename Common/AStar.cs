@@ -8,49 +8,81 @@
 // EXPRESS OR IMPLIED. USE IT AT YOUR OWN RISK. THE AUTHOR ACCEPTS NO
 // LIABILITY FOR ANY DATA DAMAGE/LOSS THAT THIS PRODUCT MAY CAUSE.
 //-----------------------------------------------------------------------
-using System;
-using System.Collections;
 using EMK.Collections;
-using EMK.LightGeometry;
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace EMK.Cartography
+namespace Common
 {
     /// <summary>
     /// A heuristic is a function that associates a value with a node to gauge it considering the node to reach.
     /// </summary>
-    public delegate double Heuristic(Node NodeToEvaluate, Node TargetNode);
+    //public delegate double Heuristic(Node NodeToEvaluate, Node TargetNode);
+    public delegate double Heuristic(Sector SectorToEvaluate, Sector TargetSector);
 
     /// <summary>
     /// Class to search the best path between two nodes on a graph.
     /// </summary>
     public class AStar
     {
-        Graph _Graph;
-        SortableList _Open;//, _Closed;
-        Dictionary<Track, Track> _open, _closed;
+        SortableList<Track> _Open;
+        ConcurrentDictionary<Track, Track> _open, _closed;
         Track _LeafToGoBackUp;
         int _NbIterations = -1;
+        ConcurrentDictionary<Point3D, Sector> _sectors;
 
-        SortableList.Equality SameNodesReached = new SortableList.Equality(Track.SameEndNode);
+        SortableList<Track>.Equality SameNodesReached = new SortableList<Track>.Equality(Track.SameEndNode);
+
+        public static double EuclidianDistance(Sector S1, Sector S2)
+        {
+            return Math.Sqrt(SquareEuclidianDistance(S1, S2));
+        }
+
+        public static double SquareEuclidianDistance(Sector S1, Sector S2)
+        {
+            if (S1 == null || S2 == null) throw new ArgumentNullException();
+            double DX = S1.Position.X - S2.Position.X;
+            double DY = S1.Position.Y - S2.Position.Y;
+            double DZ = S1.Position.Z - S2.Position.Z;
+            return DX * DX + DY * DY + DZ * DZ;
+        }
+        public static double ManhattanDistance(Sector S1, Sector S2)
+        {
+            if (S1 == null || S2 == null) throw new ArgumentNullException();
+            double DX = S1.Position.X - S2.Position.X;
+            double DY = S1.Position.Y - S2.Position.Y;
+            double DZ = S1.Position.Z - S2.Position.Z;
+            return Math.Abs(DX) + Math.Abs(DY) + Math.Abs(DZ);
+        }
+
+        public static double MaxDistanceAlongAxis(Sector S1, Sector S2)
+        {
+            if (S1 == null || S2 == null) throw new ArgumentNullException();
+            double DX = Math.Abs(S1.Position.X - S2.Position.X);
+            double DY = Math.Abs(S1.Position.Y - S2.Position.Y);
+            double DZ = Math.Abs(S1.Position.Z - S2.Position.Z);
+            return Math.Max(DX, Math.Max(DY, DZ));
+        }
 
         /// <summary>
         /// Heuristic based on the euclidian distance : Sqrt(Dx²+Dy²+Dz²)
         /// </summary>
         public static Heuristic EuclidianHeuristic
-        { get { return new Heuristic(Node.EuclidianDistance); } }
+        { get { return new Heuristic(EuclidianDistance); } }
 
         /// <summary>
         /// Heuristic based on the maximum distance : Max(|Dx|, |Dy|, |Dz|)
         /// </summary>
         public static Heuristic MaxAlongAxisHeuristic
-        { get { return new Heuristic(Node.MaxDistanceAlongAxis); } }
+        { get { return new Heuristic(MaxDistanceAlongAxis); } }
 
         /// <summary>
         /// Heuristic based on the manhattan distance : |Dx|+|Dy|+|Dz|
         /// </summary>
         public static Heuristic ManhattanHeuristic
-        { get { return new Heuristic(Node.ManhattanDistance); } }
+        { get { return new Heuristic(ManhattanDistance); } }
 
         /// <summary>
         /// Gets/Sets the heuristic that AStar will use.
@@ -82,15 +114,12 @@ namespace EMK.Cartography
         /// AStar Constructor.
         /// </summary>
         /// <param name="G">The graph on which AStar will perform the search.</param>
-        public AStar(Graph G)
+        public AStar(ConcurrentDictionary<Point3D, Sector> sectors)
         {
-            _Graph = G;
-            _Open = new SortableList();
-            //_Closed = new SortableList();
-            //_open = new HashSet<Track>();
-            //_closed = new HashSet<Track>();
-            _open = new Dictionary<Track, Track>();
-            _closed = new Dictionary<Track, Track>();
+            _sectors = sectors;
+            _Open = new SortableList<Track>();
+            _open = new ConcurrentDictionary<Track, Track>();
+            _closed = new ConcurrentDictionary<Track, Track>();
             ChoosenHeuristic = EuclidianHeuristic;
             DijkstraHeuristicBalance = 0.5;
         }
@@ -102,45 +131,15 @@ namespace EMK.Cartography
         /// <param name="StartNode">The node from which the path must start.</param>
         /// <param name="EndNode">The node to which the path must end.</param>
         /// <returns>'true' if succeeded / 'false' if failed.</returns>
-        public bool SearchPath(Node StartNode, Node EndNode, bool ignoreWeight)
+        public bool SearchPath(Sector StartSector, Sector EndSector, bool ignoreWeight)
         {
-            lock (_Graph)
-            {
-                Initialize(StartNode, EndNode);
-                while (NextStep(ignoreWeight)) { }
-                return PathFound;
-            }
+            //lock (_Graph)
+            //{
+            Initialize(StartSector, EndSector);
+            while (NextStep(ignoreWeight)) { }
+            return PathFound;
+            //}
         }
-
-        /// <summary>
-        /// Use for debug in 'step by step' mode only.
-        /// Returns all the tracks found in the 'Open' list of the algorithm at a given time.
-        /// A track is a list of the nodes visited to come to the current node.
-        /// </summary>
-        public Node[][] Open
-        {
-            get
-            {
-                Node[][] NodesList = new Node[_Open.Count][];
-                for (int i = 0; i < _Open.Count; i++) NodesList[i] = GoBackUpNodes((Track)_Open[i]);
-                return NodesList;
-            }
-        }
-
-        /// <summary>
-        /// Use for debug in a 'step by step' mode only.
-        /// Returns all the tracks found in the 'Closed' list of the algorithm at a given time.
-        /// A track is a list of the nodes visited to come to the current node.
-        /// </summary>
-        /*public Node[][] Closed
-		{
-			get
-			{
-				Node[][] NodesList = new Node[_Closed.Count][];
-				for ( int i=0; i<_Closed.Count; i++ ) NodesList[i] = GoBackUpNodes((Track)_Closed[i]);
-				return NodesList;
-			}
-		}*/
 
         /// <summary>
         /// Use for a 'step by step' search only. This method is alternate to SearchPath.
@@ -149,17 +148,17 @@ namespace EMK.Cartography
         /// <exception cref="ArgumentNullException">StartNode and EndNode cannot be null.</exception>
         /// <param name="StartNode">The node from which the path must start.</param>
         /// <param name="EndNode">The node to which the path must end.</param>
-        public void Initialize(Node StartNode, Node EndNode)
+        public void Initialize(Sector StartSector, Sector EndSector)
         {
-            if (StartNode == null || EndNode == null) throw new ArgumentNullException();
+            if (StartSector == null || EndSector == null) throw new ArgumentNullException();
             //_Closed.Clear();
             _Open.Clear();
             _open.Clear();
             _closed.Clear();
-            Track.Target = EndNode;
-            Track start = new Track(StartNode);
+            //Track.Target = EndNode;
+            Track start = new Track(StartSector, EndSector);
             _Open.Add(start);
-            _open.Add(start, start);
+            _open.TryAdd(start, start);
             _NbIterations = 0;
             _LeafToGoBackUp = null;
         }
@@ -178,8 +177,9 @@ namespace EMK.Cartography
 
             int IndexMin = _Open.IndexOfMin();
             Track BestTrack = (Track)_Open[IndexMin];
+            Track s;
             _Open.RemoveAt(IndexMin);
-            _open.Remove(BestTrack);
+            _open.TryRemove(BestTrack, out s);
             if (BestTrack.Succeed)
             {
                 _LeafToGoBackUp = BestTrack;
@@ -189,55 +189,45 @@ namespace EMK.Cartography
             else
             {
                 Propagate(BestTrack, ignoreWeight);
-                //_Closed.Add(BestTrack);
-                _closed.Add(BestTrack, BestTrack);
+                _closed.TryAdd(BestTrack, BestTrack);
             }
             return _Open.Count > 0;
         }
 
         private void Propagate(Track TrackToPropagate, bool ignoreWeight)
         {
-            foreach (Arc A in TrackToPropagate.EndNode.OutgoingArcsHash)
+            if (TrackToPropagate.EndSector.NorthGate != null)
+                Propagate(TrackToPropagate, TrackToPropagate.EndSector.NorthGate, ignoreWeight);
+            if (TrackToPropagate.EndSector.SouthGate != null)
+                Propagate(TrackToPropagate, TrackToPropagate.EndSector.SouthGate, ignoreWeight);
+            if (TrackToPropagate.EndSector.WestGate != null)
+                Propagate(TrackToPropagate, TrackToPropagate.EndSector.WestGate, ignoreWeight);
+            if (TrackToPropagate.EndSector.EastGate != null)
+                Propagate(TrackToPropagate, TrackToPropagate.EndSector.EastGate, ignoreWeight);
+        }
+
+        void Propagate(Track TrackToPropagate, Sector nextSector, bool ignoreWeight)
+        {
+            Track Successor = new Track(TrackToPropagate, nextSector, ignoreWeight);
+            Track s;
+            if (_open.ContainsKey(Successor))
             {
-                if (A.Passable && A.EndNode.Passable)
+                if (Successor.Cost >= _open[Successor].Cost) return;
+                int PosNO = _Open.IndexOf(Successor, SameNodesReached);
+                if (PosNO > 0)
                 {
-                    Track Successor = new Track(TrackToPropagate, A, ignoreWeight);
-                    if (_open.ContainsKey(Successor))
-                    {
-                        if (Successor.Cost >= _open[Successor].Cost) continue;
-                        int PosNO = _Open.IndexOf(Successor, SameNodesReached);
-                        if (PosNO > 0)
-                        {
-                            /*if (PosNO > 0 && Successor.Cost >= ((Track)_Open[PosNO]).Cost)
-                                continue;*/
-                            _Open.RemoveAt(PosNO);
-                            _open.Remove(Successor);
-                        }
-                    }
-                    if (_closed.ContainsKey(Successor))
-                    {
-                        if (Successor.Cost >= _closed[Successor].Cost) continue;
-                        _closed.Remove(Successor);
-                        /*int PosNF = _Closed.IndexOf(Successor, SameNodesReached);
-                        if (PosNF > 0)
-                        {
-                            if (PosNF > 0 && Successor.Cost >= ((Track)_Closed[PosNF]).Cost) continue;
-                            _Closed.RemoveAt(PosNF);
-                            _closed.Remove(Successor);
-                        }*/
-                    }
-                    /*int PosNF = _Closed.IndexOf(Successor, SameNodesReached);
-					int PosNO = _Open.IndexOf(Successor, SameNodesReached);
-					if ( PosNF>0 && Successor.Cost>=((Track)_Closed[PosNF]).Cost ) continue;
-					if ( PosNO>0 && Successor.Cost>=((Track)_Open[PosNO]).Cost ) continue;
-					if ( PosNF>0 ) _Closed.RemoveAt(PosNF);
-					if ( PosNO>0 ) _Open.RemoveAt(PosNO);*/
-                    if (!_open.ContainsKey(Successor))
-                    {
-                        _Open.Add(Successor);
-                        _open.Add(Successor, Successor);
-                    }
+                    _Open.RemoveAt(PosNO);
+                    _open.TryRemove(Successor, out s);
                 }
+            }
+            if (_closed.ContainsKey(Successor))
+            {
+                if (Successor.Cost >= _closed[Successor].Cost) return;
+                _closed.TryRemove(Successor, out s);
+            }
+            if (_open.TryAdd(Successor, Successor))
+            {
+                _Open.Add(Successor);
             }
         }
 
@@ -301,7 +291,7 @@ namespace EMK.Cartography
         /// Gets the array of nodes representing the found path.
         /// </summary>
         /// <exception cref="InvalidOperationException">You cannot get a result unless the search has ended.</exception>
-        public Node[] PathByNodes
+        public Sector[] PathByNodes
         {
             get
             {
@@ -311,32 +301,13 @@ namespace EMK.Cartography
             }
         }
 
-        private Node[] GoBackUpNodes(Track T)
+        private Sector[] GoBackUpNodes(Track T)
         {
             int Nb = T.NbArcsVisited;
-            Node[] Path = new Node[Nb + 1];
+            Sector[] Path = new Sector[Nb + 1];
             for (int i = Nb; i >= 0; i--, T = T.Queue)
-                Path[i] = T.EndNode;
+                Path[i] = T.EndSector;
             return Path;
-        }
-
-        /// <summary>
-        /// Gets the array of arcs representing the found path.
-        /// </summary>
-        /// <exception cref="InvalidOperationException">You cannot get a result unless the search has ended.</exception>
-        public Arc[] PathByArcs
-        {
-            get
-            {
-                CheckSearchHasEnded();
-                if (!PathFound) return null;
-                int Nb = _LeafToGoBackUp.NbArcsVisited;
-                Arc[] Path = new Arc[Nb];
-                Track Cur = _LeafToGoBackUp;
-                for (int i = Nb - 1; i >= 0; i--, Cur = Cur.Queue)
-                    Path[i] = Cur.Queue.EndNode.ArcGoingTo(Cur.EndNode);
-                return Path;
-            }
         }
 
         /// <summary>
@@ -353,7 +324,7 @@ namespace EMK.Cartography
                 Point3D[] Path = new Point3D[Nb + 1];
                 Track Cur = _LeafToGoBackUp;
                 for (int i = Nb; i >= 0; i--, Cur = Cur.Queue)
-                    Path[i] = Cur.EndNode.Position;
+                    Path[i] = Cur.EndSector.Position;
                 return Path;
             }
         }

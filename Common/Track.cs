@@ -11,22 +11,22 @@
 using System;
 
 
-namespace EMK.Cartography
+namespace Common
 {
-	/// <summary>
-	/// A track is a succession of nodes which have been visited.
-	/// Thus when it leads to the target node, it is easy to return the result path.
-	/// These objects are contained in Open and Closed lists.
-	/// </summary>
-	internal class Track : IComparable
+    /// <summary>
+    /// A track is a succession of nodes which have been visited.
+    /// Thus when it leads to the target node, it is easy to return the result path.
+    /// These objects are contained in Open and Closed lists.
+    /// </summary>
+    internal class Track : IComparable<Track>
 	{
-		private static Node _Target = null;
-		private static double _Coeff = 0.5;
+        private Sector _target = null;
+        private static double _Coeff = 0.5;
 		private static Heuristic _ChoosenHeuristic = AStar.EuclidianHeuristic;
 
-		public static Node Target { set { _Target = value; } get { return _Target; } }
+        public Sector Target { set { _target = value; } get { return _target; } }
 
-		public Node EndNode;
+        public Sector EndSector;
 		public Track Queue;
 
 		public static double DijkstraHeuristicBalance
@@ -59,53 +59,53 @@ namespace EMK.Cartography
 		{
 			get
 			{
-				return _Coeff*_Cost+(1-_Coeff)*_ChoosenHeuristic(EndNode, _Target);
+				return _Coeff*_Cost+(1-_Coeff)*_ChoosenHeuristic(EndSector, _target);
 			}
 		}
-        //bool _ignoreWeight;
-		public bool Succeed { get { return EndNode.Equals(_Target); } }
+		public bool Succeed { get { return EndSector.Equals(_target); } }
 
-		public Track(Node GraphNode)
+		public Track(Sector currentNode, Sector targetNode)
 		{
-			if ( _Target==null ) throw new InvalidOperationException("You must specify a target Node for the Track class.");
+            _target = targetNode;
+            if ( _target==null ) throw new InvalidOperationException("You must specify a target Node for the Track class.");
 			_Cost = 0;
 			_NbArcsVisited = 0;
 			Queue = null;
-			EndNode = GraphNode;
+            EndSector = currentNode;
 		}
 
-		public Track(Track PreviousTrack, Arc Transition, bool ignoreWeight)
+		public Track(Track PreviousTrack, Sector nextSector, bool ignoreWeight)
 		{
-			if (_Target==null) throw new InvalidOperationException("You must specify a target Node for the Track class.");
+            _target = PreviousTrack.Target;
+            if (_target == null) throw new InvalidOperationException("You must specify a target Node for the Track class.");
 			Queue = PreviousTrack;
-			_Cost = Queue.Cost + (!ignoreWeight ? Transition.Cost: 1);
+			_Cost = Queue.Cost + (!ignoreWeight ? nextSector.DangerLevel: 1);
 			_NbArcsVisited = Queue._NbArcsVisited + 1;
-			EndNode = Transition.EndNode;
+            EndSector = nextSector;
 		}
 
-		public int CompareTo(object Objet)
+		public int CompareTo(Track Objet)
 		{
-			Track OtherTrack = (Track) Objet;
+			Track OtherTrack = Objet;
 			return Evaluation.CompareTo(OtherTrack.Evaluation);
 		}
 
 		public static bool SameEndNode(object O1, object O2)
 		{
-			Track P1 = O1 as Track;
-			Track P2 = O2 as Track;
-			if ( P1==null || P2==null ) throw new ArgumentException("Objects must be of 'Track' type.");
-			return P1.EndNode.Equals(P2.EndNode);
+			Track P1 = (Track)O1;
+			Track P2 = (Track)O2;
+			return P1.EndSector.Equals(P2.EndSector);
 		}
 
         public override bool Equals(object obj)
         {
-            Track t = obj as Track;
-            return t != null && t.EndNode.Equals(EndNode);
+            Track t = (Track)obj;
+            return t != null && t.EndSector.Equals(EndSector);
         }
 
         public override int GetHashCode()
         {
-            return EndNode.GetHashCode();
+            return EndSector.GetHashCode();
         }
     }
 }
