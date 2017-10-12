@@ -46,13 +46,16 @@
   <ItemGroup>
     <Compile Include="AStar.cs" />
     <Compile Include="MarkovNameGenerator.cs" />
+    <Compile Include="Models\DirectionEnum.cs" />
+    <Compile Include="Models\RaceEnum.cs" />
+    <Compile Include="Models\UniverseModel.cs" />
     <Compile Include="NotifyPropertyChanged.cs" />
     <Compile Include="PerlinNoise.cs" />
     <Compile Include="Point3D.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Sector.cs" />
+    <Compile Include="Models\SectorModel.cs" />
     <Compile Include="Track.cs" />
-    <Compile Include="Universe.cs" />
+    <Compile Include="UniverseLogic.cs" />
     <Compile Include="Vector3D.cs" />
     <Compile Include="Words.cs" />
   </ItemGroup>

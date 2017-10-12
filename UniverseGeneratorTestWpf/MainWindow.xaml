@@ -23,25 +23,15 @@
                 <RowDefinition/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
-            <components:MultipleItemsListView Grid.RowSpan="3" x:Name="MyListBox" ItemsSource="{Binding Sectors}" SelectedItem="{Binding SelectedSector}" CustomSelectedItems="{Binding SelectedSectors, Mode=TwoWay}"  PreviewMouseMove="ZoomableCanvas_PreviewMouseMove" PreviewMouseWheel="ZoomableCanvas_PreviewMouseWheel">
+            <components:MultipleItemsListView Grid.RowSpan="3" x:Name="MyListBox" ItemsSource="{Binding Sectors}" SelectedItem="{Binding SelectedSector, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" CustomSelectedItems="{Binding SelectedSectors, Mode=TwoWay}"  PreviewMouseMove="ZoomableCanvas_PreviewMouseMove" PreviewMouseWheel="ZoomableCanvas_PreviewMouseWheel">
                 <components:MultipleItemsListView.ItemsPanel>
                     <ItemsPanelTemplate>
-                        <!--<components:CanvasAutoSize>
-                        <Canvas.CacheMode>
-                            <BitmapCache EnableClearType="False" RenderAtScale="10" SnapsToDevicePixels="False" />
-                        </Canvas.CacheMode>
-                    </components:CanvasAutoSize>-->
                         <components:ZoomableCanvas RealizationLimit="5000"
                         RealizationRate="20"
                         RealizationPriority="Input"
                         Loaded="ZoomableCanvas_Loaded"/>
                     </ItemsPanelTemplate>
                 </components:MultipleItemsListView.ItemsPanel>
-                <!--<components:MultipleItemsListView.ItemTemplate>
-                <DataTemplate>
-                    <views:SectorItemView/>
-                </DataTemplate>
-            </components:MultipleItemsListView.ItemTemplate>-->
                 <components:MultipleItemsListView.ItemContainerStyle>
                     <Style TargetType="ListBoxItem">
 
@@ -73,24 +63,6 @@
                             </Setter.Value>
                         </Setter>
                     </Style>
-                    <!--<Style>
-                    <Setter Property="Canvas.Left">
-                        <Setter.Value>
-                            <MultiBinding Converter="{StaticResource mulConv}" ConverterParameter="20">
-                                <Binding Path="X"/>
-                                <Binding Path="DataContext.MinX" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=Window}"/>
-                            </MultiBinding>
-                        </Setter.Value>
-                    </Setter>
-                    <Setter Property="Canvas.Top">
-                        <Setter.Value>
-                            <MultiBinding Converter="{StaticResource mulConv}" ConverterParameter="20">
-                                <Binding Path="Y"/>
-                                <Binding Path="DataContext.MinY" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=Window}"/>
-                            </MultiBinding>
-                        </Setter.Value>
-                    </Setter>
-                </Style>-->
                 </components:MultipleItemsListView.ItemContainerStyle>
             </components:MultipleItemsListView>
             <GroupBox Grid.Column="1" Header="Информация о выбранном секторе">
@@ -150,11 +122,15 @@
                         <RowDefinition Height="30"></RowDefinition>
                         <RowDefinition Height="30"></RowDefinition>
                         <RowDefinition Height="30"></RowDefinition>
+                        <RowDefinition Height="30"></RowDefinition>
+                        <RowDefinition Height="30"></RowDefinition>
                     </Grid.RowDefinitions>
                     <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="Кол-во циклов генерации:"></TextBlock>
                     <TextBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding Cycles}"></TextBox>
 
                     <Button Grid.Row="2" Grid.ColumnSpan="2" Content="Сгенерировать карту" Command="{Binding GenerateMap}"/>
+                    <Button Grid.Row="3" Grid.ColumnSpan="2" Content="Сохранить карту" Command="{Binding SerializeUniverse}"/>
+                    <Button Grid.Row="4" Grid.ColumnSpan="2" Content="Загрузить карту" Command="{Binding DeserializeUniverse}"/>
                 </Grid>
             </GroupBox>
         </Grid>

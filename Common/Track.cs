@@ -8,6 +8,7 @@
 // EXPRESS OR IMPLIED. USE IT AT YOUR OWN RISK. THE AUTHOR ACCEPTS NO
 // LIABILITY FOR ANY DATA DAMAGE/LOSS THAT THIS PRODUCT MAY CAUSE.
 //-----------------------------------------------------------------------
+using Common.Models;
 using Priority_Queue;
 using System;
 
@@ -20,83 +21,82 @@ namespace Common
     /// These objects are contained in Open and Closed lists.
     /// </summary>
     internal class Track : FastPriorityQueueNode, IComparable<Track>
-	{
-        private Sector _target = null;
+    {
         private static double _Coeff = 0.5;
-		private static Heuristic _ChoosenHeuristic = AStar.EuclidianHeuristic;
+        private static Heuristic _ChoosenHeuristic = AStar.EuclidianHeuristic;
 
-        public Sector Target { set { _target = value; } get { return _target; } }
+        public SectorModel Target { get; set; }
 
-        public Sector EndSector;
-		public Track Queue;
+        public SectorModel EndSector;
+        public Track Queue;
 
-		public static double DijkstraHeuristicBalance
-		{
-			get { return _Coeff; }
-			set
-			{
-				if ( value<0 || value>1 ) throw new ArgumentException(
-@"The coefficient which balances the respective influences of Dijkstra and the Heuristic must belong to [0; 1].
+        public static double DijkstraHeuristicBalance
+        {
+            get { return _Coeff; }
+            set
+            {
+                if (value < 0 || value > 1) throw new ArgumentException(
+  @"The coefficient which balances the respective influences of Dijkstra and the Heuristic must belong to [0; 1].
 -> 0 will minimize the number of nodes explored but will not take the real cost into account.
 -> 0.5 will minimize the cost without developing more nodes than necessary.
 -> 1 will only consider the real cost without estimating the remaining cost.");
-				_Coeff = value;
-			}
-		}
+                _Coeff = value;
+            }
+        }
 
-		public static Heuristic ChoosenHeuristic
-		{
-			set { _ChoosenHeuristic = value; }
-			get { return _ChoosenHeuristic; }
-		}
+        public static Heuristic ChoosenHeuristic
+        {
+            set { _ChoosenHeuristic = value; }
+            get { return _ChoosenHeuristic; }
+        }
 
-		private int _NbArcsVisited;
-		public int NbArcsVisited { get { return _NbArcsVisited; } }
+        private int _NbArcsVisited;
+        public int NbArcsVisited { get { return _NbArcsVisited; } }
 
-		private double _Cost;
-		public double Cost { get { return _Cost; } }
+        private double _Cost;
+        public double Cost { get { return _Cost; } }
 
-		virtual public double Evaluation
-		{
-			get
-			{
-				return _Coeff*_Cost+(1-_Coeff)*_ChoosenHeuristic(EndSector, _target);
-			}
-		}
-		public bool Succeed { get { return EndSector.Equals(_target); } }
+        virtual public double Evaluation
+        {
+            get
+            {
+                return _Coeff * _Cost + (1 - _Coeff) * _ChoosenHeuristic(EndSector, Target);
+            }
+        }
+        public bool Succeed { get { return EndSector.Equals(Target); } }
 
-		public Track(Sector currentNode, Sector targetNode)
-		{
-            _target = targetNode;
-            if ( _target==null ) throw new InvalidOperationException("You must specify a target Node for the Track class.");
-			_Cost = 0;
-			_NbArcsVisited = 0;
-			Queue = null;
+        public Track(SectorModel currentNode, SectorModel targetNode)
+        {
+            Target = targetNode;
+            if (Target == null) throw new InvalidOperationException("You must specify a target Node for the Track class.");
+            _Cost = 0;
+            _NbArcsVisited = 0;
+            Queue = null;
             EndSector = currentNode;
-		}
+        }
 
-		public Track(Track PreviousTrack, Sector nextSector, bool ignoreWeight)
-		{
-            _target = PreviousTrack.Target;
-            if (_target == null) throw new InvalidOperationException("You must specify a target Node for the Track class.");
-			Queue = PreviousTrack;
-			_Cost = Queue.Cost + (!ignoreWeight ? nextSector.DangerLevel: 1);
-			_NbArcsVisited = Queue._NbArcsVisited + 1;
+        public Track(Track PreviousTrack, SectorModel nextSector, bool ignoreWeight)
+        {
+            Target = PreviousTrack.Target;
+            if (Target == null) throw new InvalidOperationException("You must specify a target Node for the Track class.");
+            Queue = PreviousTrack;
+            _Cost = Queue.Cost + (!ignoreWeight ? nextSector.DangerLevel : 1);
+            _NbArcsVisited = Queue._NbArcsVisited + 1;
             EndSector = nextSector;
-		}
+        }
 
-		public int CompareTo(Track Objet)
-		{
-			Track OtherTrack = Objet;
-			return Evaluation.CompareTo(OtherTrack.Evaluation);
-		}
+        public int CompareTo(Track Objet)
+        {
+            Track OtherTrack = Objet;
+            return Evaluation.CompareTo(OtherTrack.Evaluation);
+        }
 
-		public static bool SameEndNode(object O1, object O2)
-		{
-			Track P1 = (Track)O1;
-			Track P2 = (Track)O2;
-			return P1.EndSector.Equals(P2.EndSector);
-		}
+        public static bool SameEndNode(object O1, object O2)
+        {
+            Track P1 = (Track)O1;
+            Track P2 = (Track)O2;
+            return P1.EndSector.Equals(P2.EndSector);
+        }
 
         public override bool Equals(object obj)
         {

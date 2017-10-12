@@ -1,7 +1,10 @@
 ﻿using Common;
+using Common.Models;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using UniverseGeneratorTestWpf.Helpers;
@@ -10,7 +13,7 @@ namespace UniverseGeneratorTestWpf.ViewModels
 {
     public class MainViewModel : UserWaitableViewModel
     {
-        Universe universe;
+        UniverseLogic universe;
         int _minX;
         public int MinX
         {
@@ -96,8 +99,8 @@ namespace UniverseGeneratorTestWpf.ViewModels
             }
         }
 
-        private Sector _selectedSector;
-        public Sector SelectedSector
+        private SectorModel _selectedSector;
+        public SectorModel SelectedSector
         {
             get { return _selectedSector; }
             set
@@ -107,8 +110,8 @@ namespace UniverseGeneratorTestWpf.ViewModels
             }
         }
 
-        private List<Sector> _selectedSectors;
-        public List<Sector> SelectedSectors
+        private List<SectorModel> _selectedSectors;
+        public List<SectorModel> SelectedSectors
         {
             get { return _selectedSectors; }
             set
@@ -140,31 +143,51 @@ namespace UniverseGeneratorTestWpf.ViewModels
             }
         }
 
+        private UniverseModel _universe;
+        public UniverseModel Universe
+        {
+            get { return _universe; }
+            set
+            {
+                _universe = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public ICommand FindWay { get; set; }
         public ICommand GenerateMap { get; set; }
+        public ICommand SerializeUniverse { get; set; }
+        public ICommand DeserializeUniverse { get; set; }
 
         public MainViewModel()
         {
-            SelectedSectors = new List<Sector>();
-            universe = new Universe();
+            SelectedSectors = new List<SectorModel>();
+            universe = new UniverseLogic();
             FindWay = new Command(FindWayCmd, () => SelectedSectors?.Count == 2);
             GenerateMap = new Command(GenerateUniverse);
-            //GenerateUniverse();
+            SerializeUniverse = new Command(Serialize);
+            DeserializeUniverse = new Command(Deserialize);
         }
 
         async void GenerateUniverse()
         {
+            Universe = new UniverseModel();
             IsInProgress = true;
-            await universe.GenerateUniverse(Cycles, true, 0.00d);
-            MinX = universe.MinX;
-            MinY = universe.MinY;
-            MaxX = universe.MaxX;
-            MaxY = universe.MaxY;
+            await universe.GenerateUniverse(Universe, Cycles, true, 0.00d);
+            SetSectors();
+            IsInProgress = false;
+        }
+
+        void SetSectors()
+        {
+            MinX = Universe.MinX;
+            MinY = Universe.MinY;
+            MaxX = Universe.MaxX;
+            MaxY = Universe.MaxY;
             TotalX = -MinX + MaxX + 1;
             TotalY = -MinY + MaxY + 1;
-            Sectors = new GridLikeItemsSource(universe.Sectors.Values.ToList(), MinX, MinY, MaxX, MaxY, 50);
-            Sectors.Count = universe.Sectors.Count;
-            IsInProgress = false;
+            Sectors = new GridLikeItemsSource(Universe.Sectors.Values.ToList(), MinX, MinY, MaxX, MaxY, 50);
+            Sectors.Count = Universe.Sectors.Count;
         }
 
         async void FindWayCmd()
@@ -172,12 +195,21 @@ namespace UniverseGeneratorTestWpf.ViewModels
             IsInProgress = true;
             await Task.Factory.StartNew(() =>
             {
-                universe.Sectors.AsParallel().ForAll(p => p.Value.IsRoute = false);
-                List<Sector> sectorsToHighlight = universe.FindPath(SelectedSectors[0], SelectedSectors[1], SearchFastest);
+                Universe.Sectors.AsParallel().ForAll(p => p.Value.IsRoute = false);
+                List<SectorModel> sectorsToHighlight = universe.FindPath(Universe, SelectedSectors[0], SelectedSectors[1], SearchFastest);
                 sectorsToHighlight.AsParallel().ForAll(p => p.IsRoute = true);
                 PathSectorsCount = sectorsToHighlight.Count;
             });
             IsInProgress = false;
+        }
+
+        void Serialize()
+        {
+            
+        }
+        void Deserialize()
+        {
+            SetSectors();
         }
     }
 }

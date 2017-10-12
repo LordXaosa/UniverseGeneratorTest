@@ -1,4 +1,5 @@
 ﻿using Common;
+using Common.Models;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -15,36 +16,36 @@ namespace UniverseGeneratorTestWpf.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            Race race = (Race)value;
-            if (race == Race.Argon)
+            RaceEnum race = (RaceEnum)value;
+            if (race == RaceEnum.Argon)
             {
                 return new SolidColorBrush(Colors.Blue);
             }
-            else if (race == Race.Paranid)
+            else if (race == RaceEnum.Paranid)
             {
-                return new SolidColorBrush(Colors.DarkRed);
+                return new SolidColorBrush(Colors.LightGreen);
             }
-            else if (race == Race.Teladi)
+            else if (race == RaceEnum.Teladi)
             {
-                return new SolidColorBrush(Colors.DarkGreen);
+                return new SolidColorBrush(Colors.Yellow);
             }
-            else if (race == Race.Boron)
+            else if (race == RaceEnum.Boron)
             {
-                return new SolidColorBrush(Colors.Navy);
+                return new SolidColorBrush(Colors.Green);
             }
-            else if (race == Race.Split)
-            {
-                return new SolidColorBrush(Colors.Gold);
-            }
-            else if (race == Race.Pirate)
-            {
-                return new SolidColorBrush(Colors.Red);
-            }
-            else if (race == Race.None)
+            else if (race == RaceEnum.Split)
             {
                 return new SolidColorBrush(Colors.Violet);
             }
-            return new SolidColorBrush(Colors.Black);
+            else if (race == RaceEnum.Pirate)
+            {
+                return new SolidColorBrush(Colors.Red);
+            }
+            else if (race == RaceEnum.None)
+            {
+                return new SolidColorBrush(Colors.Gray);
+            }
+            return new SolidColorBrush(Colors.DarkRed);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

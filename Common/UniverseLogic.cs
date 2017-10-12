@@ -1,4 +1,5 @@
-﻿using LibNoise;
+﻿using Common.Models;
+using LibNoise;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -8,46 +9,14 @@ using System.Threading.Tasks;
 
 namespace Common
 {
-    public class Universe
+    public class UniverseLogic
     {
-        private ConcurrentDictionary<Point3D, Sector> _sectors;
-        public ConcurrentDictionary<Point3D, Sector> Sectors
-        {
-            get { return _sectors; }
-            set
-            {
-                _sectors = value;
-            }
-        }
-        /*private Graph _graph;
-        public Graph Graph
-        {
-            get { return _graph; }
-            set
-            {
-                _graph = value;
-            }
-        }*/
-        Random rnd;
         MarkovNameGenerator ng = new MarkovNameGenerator(Words.WordsCatalogue, 0, 5);
 
-        public Universe()
-        {
-            Sectors = new ConcurrentDictionary<Point3D, Sector>();
-            //Graph = new Graph();
-        }
-
-        public int MaxY { get; set; }
-        public int MaxX { get; set; }
-        public int MinY { get; set; }
-        public int MinX { get; set; }
-
-        public Task GenerateUniverse(int cycles, bool avoidDanger, double chanced)
+        public Task GenerateUniverse(UniverseModel universe, int cycles, bool avoidDanger, double chanced)
         {
             return Task.Run(() =>
             {
-                //Graph = new Graph();
-                rnd = new Random(465845);
                 //PerlinNoise noise = new PerlinNoise(8973454);
                 FastBillow noise = new FastBillow(8973454);
                 noise.NoiseQuality = NoiseQuality.High;
@@ -67,49 +36,44 @@ namespace Common
                 biome.Frequency = 0.8;
 
                 ng.Reset();
-                Sectors.Clear();
-                ConcurrentQueue<Sector> queue = new ConcurrentQueue<Sector>();
-                if (Sectors.Count == 0)
+                universe.Sectors.Clear();
+                ConcurrentQueue<SectorModel> queue = new ConcurrentQueue<SectorModel>();
+                if (universe.Sectors.Count == 0)
                 {
                     Point3D pos = new Point3D(0, 0, 0);
-                    Sector s = new Sector(pos, ng.GetName(pos.GetHashCode()));
+                    SectorModel s = new SectorModel(pos, ng.GetName(pos.GetHashCode()));
                     s.Race = GetRace(biome.GetValue(pos.X, 0, pos.Y));
-                    Sectors.TryAdd(pos, s);
-                    //Node n = new Node(pos);
-                    //_graph.AddNode(n);
+                    universe.Sectors.TryAdd(pos, s);
                     queue.Enqueue(s);
                 }
-                Stopwatch sw = new Stopwatch();
-                sw.Start();
                 while (queue.Count != 0 && cycles-- > 0)
                 {
-                    cycles = GenerateUniverse(queue, cycles, chanced, noise, biome);
+                    cycles = GenerateUniverse(universe, queue, cycles, chanced, noise, biome);
                 }
-                sw.Stop();
-                sw.Reset();
-                sw.Start();
-                //AddNodes(Graph, Sectors.Values.ToList(), avoidDanger);
-                sw.Stop();
-                GC.WaitForPendingFinalizers();
-                GC.Collect();
-                MaxX = (int)Sectors.Values.AsParallel().Max(p => p.Position.X);
-                MaxY = (int)Sectors.Values.AsParallel().Max(p => p.Position.Y); ;
-                MinX = (int)Sectors.Values.AsParallel().Min(p => p.Position.X); ;
-                MinY = (int)Sectors.Values.AsParallel().Min(p => p.Position.Y); ;
+                universe.Sectors.Values.AsParallel().ForAll(p => 
+                {
+                    if (p.Position.X > universe.MaxX)
+                        universe.MaxX = (int)p.Position.X;
+                    if (p.Position.Y > universe.MaxY)
+                        universe.MaxY = (int)p.Position.Y;
+                    if (p.Position.X < universe.MinX)
+                        universe.MinX = (int)p.Position.X;
+                    if (p.Position.Y < universe.MinY)
+                        universe.MinY = (int)p.Position.Y;
+                });
             });
         }
 
 
 
-        public List<Sector> FindPath(Sector start, Sector end, bool ignoreWeight)
+        public List<SectorModel> FindPath(UniverseModel universe, SectorModel start, SectorModel end, bool ignoreWeight)
         {
-            AStar a = new AStar(Sectors);
-            //a.ChoosenHeuristic = AStar.EuclidianHeuristic;
+            AStar a = new AStar(universe.Sectors);
             if (start != null && end != null)
             {
                 if (a.SearchPath(start, end, ignoreWeight))
                 {
-                    return new List<Sector>(a.PathByNodes);
+                    return new List<SectorModel>(a.PathByNodes);
                 }
             }
             return null;
@@ -129,7 +93,7 @@ namespace Common
             return v;
         }
 
-        public void RandomDangerLever(Sector sector)
+        public void RandomDangerLever(SectorModel sector)
         {
             if (GetXYNoise(sector.X, sector.Y) > 100)
             {
@@ -174,26 +138,26 @@ namespace Common
             return num % 100;
         }
 
-        public Race GetRace(double val)
+        public RaceEnum GetRace(double val)
         {
             if (val <= 0)
-                return Race.Argon;
+                return RaceEnum.Argon;
             if (val <= 0.1)
-                return Race.Boron;
+                return RaceEnum.Boron;
             if (val <= 0.2)
-                return Race.Paranid;
+                return RaceEnum.Paranid;
             if (val <= 0.3)
-                return Race.Split;
+                return RaceEnum.Split;
             if (val <= 0.4)
-                return Race.Teladi;
+                return RaceEnum.Teladi;
             if (val <= 0.6)
-                return Race.Pirate;
+                return RaceEnum.Pirate;
             if (val <= 0.8)
-                return Race.Xenon;
-            return Race.None;
+                return RaceEnum.Xenon;
+            return RaceEnum.None;
         }
 
-        private int GenerateUniverse(ConcurrentQueue<Sector> queue, int cycles, double chanced, IModule noise, IModule biome)
+        private int GenerateUniverse(UniverseModel universe, ConcurrentQueue<SectorModel> queue, int cycles, double chanced, IModule noise, IModule biome)
         {
             int result = 0;
             Parallel.For(0, queue.Count, (i) =>
@@ -201,14 +165,14 @@ namespace Common
                 result = cycles--;
                 if (result <= 0)
                     return;
-                Sector sector;
+                SectorModel sector;
                 queue.TryDequeue(out sector);
                 var v = noise.GetValue(sector.X, 0, sector.Y - 1);
                 if (v > chanced)
                 {
                     Point3D npos = new Point3D(sector.X, sector.Y - 1, 0);
-                    Sector north = new Sector(npos, ng.GetName(npos.GetHashCode()), south: sector);
-                    if (Sectors.TryAdd(npos, north))
+                    SectorModel north = new SectorModel(npos, ng.GetName(npos.GetHashCode()), south: sector);
+                    if (universe.Sectors.TryAdd(npos, north))
                     {
                         north.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
                         RandomDangerLever(north);
@@ -217,7 +181,7 @@ namespace Common
                     }
                     else
                     {
-                        north = Sectors[npos];
+                        north = universe.Sectors[npos];
                         sector.NorthGate = north;
                         north.SouthGate = sector;
                     }
@@ -226,8 +190,8 @@ namespace Common
                 if (v > chanced)
                 {
                     Point3D spos = new Point3D(sector.Position.X, sector.Position.Y + 1, 0);
-                    Sector south = new Sector(spos, ng.GetName(spos.GetHashCode()), north: sector);
-                    if (Sectors.TryAdd(spos, south))
+                    SectorModel south = new SectorModel(spos, ng.GetName(spos.GetHashCode()), north: sector);
+                    if (universe.Sectors.TryAdd(spos, south))
                     {
                         south.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
                         RandomDangerLever(south);
@@ -236,7 +200,7 @@ namespace Common
                     }
                     else
                     {
-                        south = Sectors[spos];
+                        south = universe.Sectors[spos];
                         sector.SouthGate = south;
                         south.NorthGate = sector;
                     }
@@ -245,8 +209,8 @@ namespace Common
                 if (v > chanced)
                 {
                     Point3D wpos = new Point3D(sector.Position.X - 1, sector.Position.Y, 0);
-                    Sector west = new Sector(wpos, ng.GetName(wpos.GetHashCode()), east: sector);
-                    if (Sectors.TryAdd(wpos, west))
+                    SectorModel west = new SectorModel(wpos, ng.GetName(wpos.GetHashCode()), east: sector);
+                    if (universe.Sectors.TryAdd(wpos, west))
                     {
                         west.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
                         RandomDangerLever(west);
@@ -255,7 +219,7 @@ namespace Common
                     }
                     else
                     {
-                        west = Sectors[wpos];
+                        west = universe.Sectors[wpos];
                         sector.WestGate = west;
                         west.EastGate = sector;
                     }
@@ -264,8 +228,8 @@ namespace Common
                 if (v > chanced)
                 {
                     Point3D epos = new Point3D(sector.Position.X + 1, sector.Position.Y, 0);
-                    Sector east = new Sector(epos, ng.GetName(epos.GetHashCode()), west: sector);
-                    if (Sectors.TryAdd(epos, east))
+                    SectorModel east = new SectorModel(epos, ng.GetName(epos.GetHashCode()), west: sector);
+                    if (universe.Sectors.TryAdd(epos, east))
                     {
                         east.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
                         RandomDangerLever(east);
@@ -274,7 +238,7 @@ namespace Common
                     }
                     else
                     {
-                        east = Sectors[epos];
+                        east = universe.Sectors[epos];
                         sector.EastGate = east;
                         east.WestGate = sector;
                     }

@@ -8,6 +8,7 @@
 // EXPRESS OR IMPLIED. USE IT AT YOUR OWN RISK. THE AUTHOR ACCEPTS NO
 // LIABILITY FOR ANY DATA DAMAGE/LOSS THAT THIS PRODUCT MAY CAUSE.
 //-----------------------------------------------------------------------
+using Common.Models;
 using Priority_Queue;
 using System;
 using System.Collections.Concurrent;
@@ -18,7 +19,7 @@ namespace Common
     /// A heuristic is a function that associates a value with a node to gauge it considering the node to reach.
     /// </summary>
     //public delegate double Heuristic(Node NodeToEvaluate, Node TargetNode);
-    public delegate double Heuristic(Sector SectorToEvaluate, Sector TargetSector);
+    public delegate double Heuristic(SectorModel SectorToEvaluate, SectorModel TargetSector);
 
     /// <summary>
     /// Class to search the best path between two nodes on a graph.
@@ -30,14 +31,14 @@ namespace Common
         ConcurrentDictionary<Track, Track> _open, _closed;
         Track _LeafToGoBackUp;
         int _NbIterations = -1;
-        ConcurrentDictionary<Point3D, Sector> _sectors;
+        ConcurrentDictionary<Point3D, SectorModel> _sectors;
 
-        public static double EuclidianDistance(Sector S1, Sector S2)
+        public static double EuclidianDistance(SectorModel S1, SectorModel S2)
         {
             return Math.Sqrt(SquareEuclidianDistance(S1, S2));
         }
 
-        public static double SquareEuclidianDistance(Sector S1, Sector S2)
+        public static double SquareEuclidianDistance(SectorModel S1, SectorModel S2)
         {
             if (S1 == null || S2 == null) throw new ArgumentNullException();
             double DX = S1.Position.X - S2.Position.X;
@@ -45,7 +46,7 @@ namespace Common
             double DZ = S1.Position.Z - S2.Position.Z;
             return DX * DX + DY * DY + DZ * DZ;
         }
-        public static double ManhattanDistance(Sector S1, Sector S2)
+        public static double ManhattanDistance(SectorModel S1, SectorModel S2)
         {
             if (S1 == null || S2 == null) throw new ArgumentNullException();
             double DX = S1.Position.X - S2.Position.X;
@@ -54,7 +55,7 @@ namespace Common
             return Math.Abs(DX) + Math.Abs(DY) + Math.Abs(DZ);
         }
 
-        public static double MaxDistanceAlongAxis(Sector S1, Sector S2)
+        public static double MaxDistanceAlongAxis(SectorModel S1, SectorModel S2)
         {
             if (S1 == null || S2 == null) throw new ArgumentNullException();
             double DX = Math.Abs(S1.Position.X - S2.Position.X);
@@ -111,7 +112,7 @@ namespace Common
         /// AStar Constructor.
         /// </summary>
         /// <param name="G">The graph on which AStar will perform the search.</param>
-        public AStar(ConcurrentDictionary<Point3D, Sector> sectors)
+        public AStar(ConcurrentDictionary<Point3D, SectorModel> sectors)
         {
             _sectors = sectors;
             //_Open = new SortableList<Track>();
@@ -129,11 +130,11 @@ namespace Common
         /// <param name="StartNode">The node from which the path must start.</param>
         /// <param name="EndNode">The node to which the path must end.</param>
         /// <returns>'true' if succeeded / 'false' if failed.</returns>
-        public bool SearchPath(Sector StartSector, Sector EndSector, bool ignoreWeight)
+        public bool SearchPath(SectorModel startSector, SectorModel endSector, bool ignoreWeight)
         {
             //lock (_Graph)
             //{
-            Initialize(StartSector, EndSector);
+            Initialize(startSector, endSector);
             while (NextStep(ignoreWeight)) { }
             return PathFound;
             //}
@@ -146,15 +147,15 @@ namespace Common
         /// <exception cref="ArgumentNullException">StartNode and EndNode cannot be null.</exception>
         /// <param name="StartNode">The node from which the path must start.</param>
         /// <param name="EndNode">The node to which the path must end.</param>
-        public void Initialize(Sector StartSector, Sector EndSector)
+        public void Initialize(SectorModel startSector, SectorModel endSector)
         {
-            if (StartSector == null || EndSector == null) throw new ArgumentNullException();
+            if (startSector == null || endSector == null) throw new ArgumentNullException();
             //_Closed.Clear();
             _Open.Clear();
             _open.Clear();
             _closed.Clear();
             //Track.Target = EndNode;
-            Track start = new Track(StartSector, EndSector);
+            Track start = new Track(startSector, endSector);
             _Open.Enqueue(start, (float)start.Evaluation);
             _open.TryAdd(start, start);
             _NbIterations = 0;
@@ -204,7 +205,7 @@ namespace Common
                 Propagate(TrackToPropagate, TrackToPropagate.EndSector.EastGate, ignoreWeight);
         }
 
-        void Propagate(Track TrackToPropagate, Sector nextSector, bool ignoreWeight)
+        void Propagate(Track TrackToPropagate, SectorModel nextSector, bool ignoreWeight)
         {
             Track Successor = new Track(TrackToPropagate, nextSector, ignoreWeight);
             Track s;
@@ -289,7 +290,7 @@ namespace Common
         /// Gets the array of nodes representing the found path.
         /// </summary>
         /// <exception cref="InvalidOperationException">You cannot get a result unless the search has ended.</exception>
-        public Sector[] PathByNodes
+        public SectorModel[] PathByNodes
         {
             get
             {
@@ -299,10 +300,10 @@ namespace Common
             }
         }
 
-        private Sector[] GoBackUpNodes(Track T)
+        private SectorModel[] GoBackUpNodes(Track T)
         {
             int Nb = T.NbArcsVisited;
-            Sector[] Path = new Sector[Nb + 1];
+            SectorModel[] Path = new SectorModel[Nb + 1];
             for (int i = Nb; i >= 0; i--, T = T.Queue)
                 Path[i] = T.EndSector;
             return Path;

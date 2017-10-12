@@ -10,6 +10,8 @@ using Common;
 using System.Linq;
 using System.Threading.Tasks;
 using UniverseGeneratorTestWpf.Views.Components;
+using System.Collections.Concurrent;
+using Common.Models;
 
 namespace UniverseGeneratorTestWpf.Helpers
 {
@@ -21,17 +23,17 @@ namespace UniverseGeneratorTestWpf.Helpers
         {
             get
             {
-                return new Rect(0, 0,(-_minX+_maxX)* _multiplier, (-_minY+_maxY)* _multiplier);
+                return new Rect(0, 0, (-_minX + _maxX) * _multiplier, (-_minY + _maxY) * _multiplier);
             }
         }
-        List<Sector> list = new List<Sector>();
+        List<SectorModel> list = new List<SectorModel>();
         int _minX;
         int _minY;
         int _maxX;
         int _maxY;
         int _multiplier;
 
-        public GridLikeItemsSource(List<Sector> sectors, int minX, int minY, int maxX, int maxY, int multiplier)
+        public GridLikeItemsSource(List<SectorModel> sectors, int minX, int minY, int maxX, int maxY, int multiplier)
         {
             list = sectors;
             _minX = minX;
@@ -45,28 +47,31 @@ namespace UniverseGeneratorTestWpf.Helpers
         {
             rectangle.Intersect(Extent);
 
-            var top = Math.Floor(rectangle.Top / _multiplier) -1;
-            var left = Math.Floor(rectangle.Left / _multiplier) -1;
-            var right = Math.Ceiling(rectangle.Right / _multiplier) +1;
-            var bottom = Math.Ceiling(rectangle.Bottom / _multiplier) +1;
+            var top = Math.Floor(rectangle.Top / _multiplier) - 1;
+            var left = Math.Floor(rectangle.Left / _multiplier) - 1;
+            var right = Math.Ceiling(rectangle.Right / _multiplier) + 1;
+            var bottom = Math.Ceiling(rectangle.Bottom / _multiplier) + 1;
             var width = Math.Max(right - left, 0);
             var height = Math.Max(bottom - top, 0);
-            List<int> result = new List<int>();
-            /*Parallel.For(0, list.Count, (i) => {
+            //List<int> result = new List<int>();
+            ConcurrentBag<int> result = new ConcurrentBag<int>();
+
+            Parallel.For(0, list.Count, (i) =>
+            {
                 int x = -_minX + list[i].X;
                 int y = -_minY + list[i].Y;
                 if (x > left && x < right && y > top && y < bottom)
                     result.Add(i);
             });
-            return result;*/
-            for(int i = 0; i < list.Count; i++)
+            return result;
+            /*for(int i = 0; i < list.Count; i++)
             {
                 int x = -_minX + list[i].X;
                 int y = -_minY + list[i].Y;
                 if (x > left && x < right && y > top && y < bottom)
                     result.Add(i);
             }
-            return result;
+            return result;*/
             /*List<Point> points = Quadivide(new Rect(left, top, width, height)).ToList();
             foreach (var cell in points)
             {
