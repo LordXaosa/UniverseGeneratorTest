@@ -24,17 +24,37 @@
                 <RowDefinition/>
             </Grid.RowDefinitions>
             <components:MultipleItemsListView Grid.RowSpan="3" x:Name="MyListBox" ItemsSource="{Binding Sectors}" SelectedItem="{Binding SelectedSector, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" CustomSelectedItems="{Binding SelectedSectors, Mode=TwoWay}"  PreviewMouseMove="ZoomableCanvas_PreviewMouseMove" PreviewMouseWheel="ZoomableCanvas_PreviewMouseWheel">
+                <!--<components:MultipleItemsListView.ItemTemplate>
+                    <DataTemplate>
+                        <views:SectorItemView/>
+                    </DataTemplate>
+                </components:MultipleItemsListView.ItemTemplate>-->
                 <components:MultipleItemsListView.ItemsPanel>
                     <ItemsPanelTemplate>
                         <components:ZoomableCanvas RealizationLimit="5000"
                         RealizationRate="20"
                         RealizationPriority="Input"
-                        Loaded="ZoomableCanvas_Loaded"/>
+                        Loaded="ZoomableCanvas_Loaded" KeyDown="ZoomableCanvas_KeyDown"/>
                     </ItemsPanelTemplate>
                 </components:MultipleItemsListView.ItemsPanel>
                 <components:MultipleItemsListView.ItemContainerStyle>
-                    <Style TargetType="ListBoxItem">
+                    <Style TargetType="{x:Type ListViewItem}">
+                        <Style.Triggers>
+                            <Trigger Property="IsSelected" Value="True" >
+                                <Setter Property="Foreground" Value="Black" />
+                                <Setter Property="Background" Value="Black" />
+                                <Setter Property="BorderBrush" Value="Black"/>
+                                <Setter Property="Selector.Background" Value="Black"/>
+                            </Trigger>
+                        </Style.Triggers>
+                        <Setter Property="BorderThickness" Value="0"/>
+                        <Setter Property="FocusVisualStyle">
+                            <Setter.Value>
+                                <Style>
 
+                                </Style>
+                            </Setter.Value>
+                        </Setter>
                         <Setter Property="Canvas.Left">
                             <Setter.Value>
                                 <MultiBinding Converter="{StaticResource mulConv}" ConverterParameter="{StaticResource Multiplier}">
@@ -55,11 +75,42 @@
                         <Setter Property="VerticalContentAlignment" Value="Top"/>
                         <Setter Property="HorizontalContentAlignment" Value="Left"/>
 
-                        <Setter Property="ContentTemplate">
+                        <Setter Property="Template">
                             <Setter.Value>
-                                <DataTemplate>
-                                    <views:SectorItemView/>
-                                </DataTemplate>
+                                <ControlTemplate TargetType="{x:Type ListViewItem}">
+                                    <Border Name="Bd" BorderBrush="White" BorderThickness="1" Background="{TemplateBinding Background}">
+                                        <views:SectorItemView/>
+                                    </Border>
+
+                                    <ControlTemplate.Triggers>
+                                        <MultiTrigger>
+                                            <MultiTrigger.Conditions>
+                                                <Condition Property="IsMouseOver" Value="True"/>
+                                            </MultiTrigger.Conditions>
+                                            <Setter Property="Background" TargetName="Bd" Value="Transparent"/>
+                                            <Setter Property="BorderBrush" TargetName="Bd" Value="Black"/>
+                                        </MultiTrigger>
+                                        <MultiTrigger>
+                                            <MultiTrigger.Conditions>
+                                                <Condition Property="Selector.IsSelectionActive" Value="False"/>
+                                                <Condition Property="IsSelected" Value="True"/>
+                                            </MultiTrigger.Conditions>
+                                            <Setter Property="Background" TargetName="Bd" Value="Blue"/>
+                                            <Setter Property="BorderBrush" TargetName="Bd" Value="Blue"/>
+                                        </MultiTrigger>
+                                        <MultiTrigger>
+                                            <MultiTrigger.Conditions>
+                                                <Condition Property="Selector.IsSelectionActive" Value="True"/>
+                                                <Condition Property="IsSelected" Value="True"/>
+                                            </MultiTrigger.Conditions>
+                                            <Setter Property="Background" TargetName="Bd" Value="Transparent"/>
+                                            <Setter Property="BorderBrush" TargetName="Bd" Value="Blue"/>
+                                        </MultiTrigger>
+                                        <Trigger Property="IsEnabled" Value="False">
+                                            <Setter Property="TextElement.Foreground" TargetName="Bd" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
                             </Setter.Value>
                         </Setter>
                     </Style>

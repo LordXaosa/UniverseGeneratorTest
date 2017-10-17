@@ -23,6 +23,18 @@ namespace Common.Models
                 RaisePropertyChanged();
             }
         }
+
+        private bool _isRevealed;
+        public bool IsRevealed
+        {
+            get { return _isRevealed; }
+            set
+            {
+                _isRevealed = value;
+                RaisePropertyChanged();
+            }
+        }
+
         public SectorModel()
         { }
         public SectorModel(Point3D position, string name, SectorModel north = null, SectorModel south = null, SectorModel west = null, SectorModel east = null)

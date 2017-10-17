@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -65,6 +66,54 @@ namespace UniverseGeneratorTestWpf
                 (MyCanvas.Offset + position) * x - position);
 
             e.Handled = true;
+        }
+
+        private void ZoomableCanvas_KeyDown(object sender, KeyEventArgs e)
+        {
+            MainViewModel mvm = (MainViewModel)DataContext;
+            if (mvm.SelectedSector != null)
+            {
+                if (e.Key == Key.Up)
+                {
+                    if (mvm.SelectedSector.NorthGate == null)
+                        e.Handled = true;
+                    if (mvm.SelectedSector.NorthGate != null && !mvm.SelectedSector.NorthGate.IsRevealed)
+                    {
+                        mvm.SelectedSector.NorthGate.IsRevealed = true;
+                        e.Handled = true;
+                    }
+                }
+                if (e.Key == Key.Down)
+                {
+                    if (mvm.SelectedSector.SouthGate == null)
+                        e.Handled = true;
+                    if (mvm.SelectedSector.SouthGate != null && !mvm.SelectedSector.SouthGate.IsRevealed)
+                    {
+                        mvm.SelectedSector.SouthGate.IsRevealed = true;
+                        e.Handled = true;
+                    }
+                }
+                if (e.Key == Key.Left)
+                {
+                    if (mvm.SelectedSector.WestGate == null)
+                        e.Handled = true;
+                    if (mvm.SelectedSector.WestGate != null && !mvm.SelectedSector.WestGate.IsRevealed)
+                    {
+                        mvm.SelectedSector.WestGate.IsRevealed = true;
+                        e.Handled = true;
+                    }
+                }
+                if (e.Key == Key.Right)
+                {
+                    if (mvm.SelectedSector.EastGate == null)
+                        e.Handled = true;
+                    if (mvm.SelectedSector.EastGate != null && !mvm.SelectedSector.EastGate.IsRevealed)
+                    {
+                        mvm.SelectedSector.EastGate.IsRevealed = true;
+                        e.Handled = true;
+                    }
+                }
+            }
         }
     }
 }

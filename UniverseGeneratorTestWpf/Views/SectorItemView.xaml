@@ -8,7 +8,9 @@
              xmlns:conv="clr-namespace:UniverseGeneratorTestWpf.Converters"
              mc:Ignorable="d"
              Width="{StaticResource Multiplier}"
-             Height="{StaticResource Multiplier}">
+             Height="{StaticResource Multiplier}"
+    Visibility="{Binding IsRevealed, Converter={StaticResource boolToVisibilityConverter}}">
+    
     <Control.Style>
         <Style TargetType="Control">
             <Setter Property="Template" Value="{StaticResource mainTempl}"/>
