@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using UniverseGeneratorTestWpf.Helpers;
@@ -203,13 +204,54 @@ namespace UniverseGeneratorTestWpf.ViewModels
             IsInProgress = false;
         }
 
-        void Serialize()
+        async void Serialize()
         {
-            
+            IsInProgress = true;
+            await Task.Factory.StartNew(() =>
+            {
+                List<SectorModel> list = Universe.Sectors.Values.ToList();
+                using (BinaryWriter bw = new BinaryWriter(File.Open("Universe.dat", FileMode.Create)))
+                {
+                    bw.Write(list.Count);
+                    foreach (var s in list)
+                    {
+                        s.WriteBinary(bw);
+                    }
+                }
+            });
+            IsInProgress = false;
         }
-        void Deserialize()
+        async void Deserialize()
         {
+            IsInProgress = true;
+            await Task.Factory.StartNew(() =>
+            {
+                Universe = new UniverseModel();
+                List<SectorModel> list = new List<SectorModel>();
+                using (BinaryReader br = new BinaryReader(File.Open("Universe.dat", FileMode.Open)))
+                {
+                    int count = br.ReadInt32();
+                    for (int i = 0; i < count; i++)
+                    {
+                        list.Add(SectorModel.Create(br));
+                    }
+                }
+                universe.MakeUniverseFromList(Universe, list);
+                Parallel.ForEach(list, (item) =>
+                {
+                    item.SetLinks(Universe.Sectors);
+                    if (item.Position.X > Universe.MaxX)
+                        Universe.MaxX = (int)item.Position.X;
+                    if (item.Position.Y > Universe.MaxY)
+                        Universe.MaxY = (int)item.Position.Y;
+                    if (item.Position.X < Universe.MinX)
+                        Universe.MinX = (int)item.Position.X;
+                    if (item.Position.Y < Universe.MinY)
+                        Universe.MinY = (int)item.Position.Y;
+                });
+            });
             SetSectors();
+            IsInProgress = false;
         }
     }
 }

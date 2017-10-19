@@ -1,4 +1,10 @@
 ﻿
+using System;
+using System.Collections.Concurrent;
+using System.IO;
+using System.Runtime.Serialization;
+using System.Security.Permissions;
+
 namespace Common.Models
 {
     public class SectorModel : NotifyPropertyChanged
@@ -7,6 +13,10 @@ namespace Common.Models
         public SectorModel SouthGate { get; set; }
         public SectorModel EastGate { get; set; }
         public SectorModel WestGate { get; set; }
+        private Point3D _northGatePos;
+        private Point3D _southGatePos;
+        private Point3D _westGatePos;
+        private Point3D _eastGatePos;
         public int X { get { return (int)Position.X; } }
         public int Y { get { return (int)Position.Y; } }
         public Point3D Position { get; set; }
@@ -57,6 +67,107 @@ namespace Common.Models
             SectorModel s = obj as SectorModel;
             if (s == null) return false;
             return Position.Equals(s.Position);
+        }
+
+        public void WriteBinary(BinaryWriter bw)
+        {
+            bw.Write(Name);
+            bw.Write((byte)DangerLevel);
+            bw.Write((byte)Race);
+            bw.Write((int)Position.X);
+            bw.Write((int)Position.Y);
+            int flag = 0;
+            flag = NorthGate != null ? 1 : 0;
+            flag = flag + (SouthGate != null ? 1 << 1 : 0 << 1);
+            flag = flag + (WestGate != null ? 1 << 2 : 0 << 2);
+            flag = flag + (EastGate != null ? 1 << 3 : 0 << 3);
+            bw.Write((byte)flag);
+            if (NorthGate != null)
+            {
+                bw.Write((int)NorthGate.Position.X);
+                bw.Write((int)NorthGate.Position.Y);
+            }
+            if (SouthGate != null)
+            {
+                bw.Write((int)SouthGate.Position.X);
+                bw.Write((int)SouthGate.Position.Y);
+            }
+            if (WestGate != null)
+            {
+                bw.Write((int)WestGate.Position.X);
+                bw.Write((int)WestGate.Position.Y);
+            }
+            if (EastGate != null)
+            {
+                bw.Write((int)EastGate.Position.X);
+                bw.Write((int)EastGate.Position.Y);
+            }
+        }
+
+        public static SectorModel Create(BinaryReader br)
+        {
+            SectorModel s = new SectorModel();
+            s.Name = br.ReadString();
+            s.DangerLevel = br.ReadByte();
+            s.Race = (RaceEnum)br.ReadByte();
+            int x = br.ReadInt32();
+            int y = br.ReadInt32();
+            s.Position = new Point3D(x, y, 0);
+            int flag = br.ReadByte();
+            if (flag % 2 == 1)
+            {
+                x = br.ReadInt32();
+                y = br.ReadInt32();
+                s._northGatePos = new Point3D(x, y, 0);
+            }
+            if ((flag >> 1) % 2 == 1)
+            {
+                x = br.ReadInt32();
+                y = br.ReadInt32();
+                s._southGatePos = new Point3D(x, y, 0);
+            }
+            if ((flag >> 2) % 2 == 1)
+            {
+                x = br.ReadInt32();
+                y = br.ReadInt32();
+                s._westGatePos = new Point3D(x, y, 0);
+            }
+            if ((flag >> 3) % 2 == 1)
+            {
+                x = br.ReadInt32();
+                y = br.ReadInt32();
+                s._eastGatePos = new Point3D(x, y, 0);
+            }
+            return s;
+        }
+
+        public void SetLinks(ConcurrentDictionary<Point3D, SectorModel> universe)
+        {
+            SectorModel other;
+            if (_northGatePos != null)
+            {
+                other = universe[_northGatePos];
+                NorthGate = other;
+                other.SouthGate = this;
+            }
+            if (_southGatePos != null)
+            {
+                other = universe[_southGatePos];
+                SouthGate = other;
+                other.NorthGate = this;
+            }
+            if (_westGatePos != null)
+            {
+                other = universe[_westGatePos];
+                WestGate = other;
+                other.EastGate = this;
+            }
+            if (_eastGatePos != null)
+            {
+                other = universe[_eastGatePos];
+                EastGate = other;
+                other.WestGate = this;
+            }
         }
     }
 

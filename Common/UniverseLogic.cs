@@ -171,7 +171,7 @@ namespace Common
                 if (v > chanced)
                 {
                     Point3D npos = new Point3D(sector.X, sector.Y - 1, 0);
-                    SectorModel north = new SectorModel(npos, ng.GetName(npos.GetHashCode()), south: sector);
+                    SectorModel north = new SectorModel(npos, ng.GetName(sector.GetHashCode() ^ npos.GetHashCode()), south: sector);
                     if (universe.Sectors.TryAdd(npos, north))
                     {
                         north.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
@@ -190,7 +190,7 @@ namespace Common
                 if (v > chanced)
                 {
                     Point3D spos = new Point3D(sector.Position.X, sector.Position.Y + 1, 0);
-                    SectorModel south = new SectorModel(spos, ng.GetName(spos.GetHashCode()), north: sector);
+                    SectorModel south = new SectorModel(spos, ng.GetName(sector.GetHashCode() ^ spos.GetHashCode()), north: sector);
                     if (universe.Sectors.TryAdd(spos, south))
                     {
                         south.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
@@ -209,7 +209,7 @@ namespace Common
                 if (v > chanced)
                 {
                     Point3D wpos = new Point3D(sector.Position.X - 1, sector.Position.Y, 0);
-                    SectorModel west = new SectorModel(wpos, ng.GetName(wpos.GetHashCode()), east: sector);
+                    SectorModel west = new SectorModel(wpos, ng.GetName(sector.GetHashCode() ^ wpos.GetHashCode()), east: sector);
                     if (universe.Sectors.TryAdd(wpos, west))
                     {
                         west.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
@@ -228,7 +228,7 @@ namespace Common
                 if (v > chanced)
                 {
                     Point3D epos = new Point3D(sector.Position.X + 1, sector.Position.Y, 0);
-                    SectorModel east = new SectorModel(epos, ng.GetName(epos.GetHashCode()), west: sector);
+                    SectorModel east = new SectorModel(epos, ng.GetName(sector.GetHashCode() ^ epos.GetHashCode()), west: sector);
                     if (universe.Sectors.TryAdd(epos, east))
                     {
                         east.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
@@ -245,6 +245,15 @@ namespace Common
                 }
             });
             return result;
+        }
+
+        public void MakeUniverseFromList(UniverseModel universe, List<SectorModel> list)
+        {
+            universe.Sectors = new ConcurrentDictionary<Point3D, SectorModel>();
+            Parallel.ForEach(list, (item) =>
+             {
+                 universe.Sectors.TryAdd(item.Position, item);
+             });
         }
     }
 }
