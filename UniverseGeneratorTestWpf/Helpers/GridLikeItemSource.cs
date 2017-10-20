@@ -133,8 +133,8 @@ namespace UniverseGeneratorTestWpf.Helpers
             set
             {
                 count = value;
-                ExtentChanged(this, EventArgs.Empty);
-                QueryInvalidated(this, EventArgs.Empty);
+                ExtentChanged?.Invoke(this, EventArgs.Empty);
+                QueryInvalidated?.Invoke(this, EventArgs.Empty);
             }
         }
 

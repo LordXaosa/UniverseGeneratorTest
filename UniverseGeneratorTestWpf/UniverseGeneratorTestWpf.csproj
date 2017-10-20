@@ -63,9 +63,11 @@
     <Compile Include="Helpers\GridLikeItemSource.cs" />
     <Compile Include="Helpers\LinkedListExtensions.cs" />
     <Compile Include="Helpers\MathExtensions.cs" />
+    <Compile Include="Helpers\Network\PacketEventArgs.cs" />
     <Compile Include="Helpers\PriorityQuadTree.cs" />
     <Compile Include="Helpers\PriorityQueue.cs" />
     <Compile Include="Helpers\RectExtensions.cs" />
+    <Compile Include="Helpers\TcpClientHelper.cs" />
     <Compile Include="Helpers\VirtualPanel.cs" />
     <Compile Include="ViewModels\UserWaitableViewModel.cs" />
     <Compile Include="Views\Components\OutlinedTextBlock.cs" />

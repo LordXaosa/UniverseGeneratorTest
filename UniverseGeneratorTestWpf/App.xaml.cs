@@ -21,14 +21,14 @@ namespace UniverseGeneratorTestWpf
 
         private void Current_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
-            /*e.Handled = true;
-            MessageBox.Show(e.Exception.Message);*/
+            e.Handled = true;
+            MessageBox.Show(e.Exception.Message);
         }
 
         private void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
-            /*e.Handled = true;
-            MessageBox.Show(e.Exception.Message);*/
+            e.Handled = true;
+            MessageBox.Show(e.Exception.Message);
         }
     }
 }

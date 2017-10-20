@@ -1,5 +1,8 @@
 ﻿using Common;
+using Common.Entities;
 using Common.Models;
+using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -9,6 +12,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using UniverseGeneratorTestWpf.Helpers;
+using UniverseGeneratorTestWpf.Helpers.Network;
 
 namespace UniverseGeneratorTestWpf.ViewModels
 {
@@ -16,6 +20,7 @@ namespace UniverseGeneratorTestWpf.ViewModels
     {
         UniverseLogic universe;
         int _minX;
+        DateTime lastPing = DateTime.Now;
         public int MinX
         {
             get { return _minX; }
@@ -154,11 +159,13 @@ namespace UniverseGeneratorTestWpf.ViewModels
                 RaisePropertyChanged();
             }
         }
+        ConcurrentQueue<Action> NetworkQueue = new ConcurrentQueue<Action>();
 
         public ICommand FindWay { get; set; }
         public ICommand GenerateMap { get; set; }
         public ICommand SerializeUniverse { get; set; }
         public ICommand DeserializeUniverse { get; set; }
+        TcpClientHelper client;
 
         public MainViewModel()
         {
@@ -168,6 +175,82 @@ namespace UniverseGeneratorTestWpf.ViewModels
             GenerateMap = new Command(GenerateUniverse);
             SerializeUniverse = new Command(Serialize);
             DeserializeUniverse = new Command(Deserialize);
+            StartClient();
+        }
+
+        async void StartClient()
+        {
+            await Task.Factory.StartNew(() =>
+            {
+                client = new TcpClientHelper("ub-1404-test-n", 5123);
+                client.PacketRecieved += Client_PacketRecieved;
+                NetworkQueue.Enqueue(Login);
+                Task.Factory.StartNew(async () =>
+                {
+                    while (true)
+                    {
+                        NetworkQueue.Enqueue(SendPing);
+                        await Task.Delay(5000);
+                    }
+                });
+                Task.Factory.StartNew(() =>
+                {
+                    while (true)
+                    {
+                        NetworkQueue.TryDequeue(out Action act);
+                        act?.Invoke();
+                    }
+                });
+            });
+        }
+
+        void SendPing()
+        {
+            if(lastPing.AddSeconds(5) > DateTime.Now)
+                return;
+            lastPing = DateTime.Now;
+            using (BinaryWriter bw = client.GetWriter())
+            {
+                bw.Write((int)PacketsEnum.Ping);
+            }
+            using (BinaryReader br = client.GetReader())
+            {
+                br.ReadInt32();
+            }
+        }
+        void Login()
+        {
+            using (BinaryWriter bw = client.GetWriter())
+            {
+                bw.Write((int)PacketsEnum.Login);
+                bw.Write("admin");
+                bw.Write("pass");
+            }
+            using (BinaryReader br = client.GetReader())
+            {
+                client.SetAuth(br.ReadBoolean());
+            }
+        }
+
+        private void Client_PacketRecieved(object sender, PacketEventArgs args)
+        {
+            TcpClientHelper c = (TcpClientHelper)sender;
+            BinaryReader br = args.Reader;
+            /*lock (client)
+            {
+                PacketsEnum packet = (PacketsEnum)br.ReadInt32();
+                switch (packet)
+                {
+                    case PacketsEnum.Ping:
+                        break;
+                    case PacketsEnum.Login:
+                        break;
+                    case PacketsEnum.GetUniverse:
+                        break;
+                    default:
+                        break;
+                }
+            }*/
         }
 
         async void GenerateUniverse()
@@ -221,12 +304,13 @@ namespace UniverseGeneratorTestWpf.ViewModels
             });
             IsInProgress = false;
         }
-        async void Deserialize()
+        void Deserialize()
         {
-            IsInProgress = true;
-            await Task.Factory.StartNew(() =>
+            NetworkQueue.Enqueue(() =>
             {
-                Universe = new UniverseModel();
+                IsInProgress = true;
+                /*
+                 * Universe = new UniverseModel();
                 List<SectorModel> list = new List<SectorModel>();
                 using (BinaryReader br = new BinaryReader(File.Open("Universe.dat", FileMode.Open)))
                 {
@@ -249,9 +333,40 @@ namespace UniverseGeneratorTestWpf.ViewModels
                     if (item.Position.Y < Universe.MinY)
                         Universe.MinY = (int)item.Position.Y;
                 });
+                */
+                if (client.IsAuth)
+                {
+                    using (BinaryWriter bw = client.GetWriter())
+                    {
+                        bw.Write((int)PacketsEnum.GetUniverse);
+                    }
+                    using (BinaryReader br = client.GetReader())
+                    {
+                        Universe = new UniverseModel();
+                        List<SectorModel> list = new List<SectorModel>();
+                        int count = br.ReadInt32();
+                        for (int i = 0; i < count; i++)
+                        {
+                            list.Add(SectorModel.Create(br));
+                        }
+                        universe.MakeUniverseFromList(Universe, list);
+                        Parallel.ForEach(list, (item) =>
+                        {
+                            item.SetLinks(Universe.Sectors);
+                            if (item.Position.X > Universe.MaxX)
+                                Universe.MaxX = (int)item.Position.X;
+                            if (item.Position.Y > Universe.MaxY)
+                                Universe.MaxY = (int)item.Position.Y;
+                            if (item.Position.X < Universe.MinX)
+                                Universe.MinX = (int)item.Position.X;
+                            if (item.Position.Y < Universe.MinY)
+                                Universe.MinY = (int)item.Position.Y;
+                        });
+                    }
+                }
+                SetSectors();
+                IsInProgress = false;
             });
-            SetSectors();
-            IsInProgress = false;
         }
     }
 }

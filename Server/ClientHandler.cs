@@ -1,6 +1,9 @@
-﻿using System;
+﻿using Common.Entities;
+using Common.Models;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -12,12 +15,14 @@ namespace Server
     {
         TcpClient client;
         List<ClientHandler> clients;
+        bool isAuth = false;
         string host;
-        public ClientHandler(TcpClient client, List<ClientHandler> clients)
+        UniverseModel universe;
+        public ClientHandler(TcpClient client, List<ClientHandler> clients, UniverseModel universe)
         {
             this.clients = clients;
             this.client = client;
-
+            this.universe = universe;
             IPEndPoint clientIp = (IPEndPoint)client.Client.RemoteEndPoint;
             host = clientIp.Address.ToString() + ":" + clientIp.Port;
 
@@ -40,27 +45,54 @@ namespace Server
                     {
                         using (BinaryWriter bw = new BinaryWriter(client.GetStream(), Encoding.UTF8, true))
                         {
-                            int packetId = br.ReadInt32();
-                            switch (packetId)
+                            PacketsEnum packet = (PacketsEnum)br.ReadInt32();
+                            switch (packet)
                             {
-                                case 0:
-                                    string s = br.ReadString();
-                                    bw.Write($"Нам пришла строка: {s}");
+                                case PacketsEnum.Ping:
+                                    Console.WriteLine("Ping-pong from "+host);
+                                    bw.Write((int)PacketsEnum.Ping);//pong
                                     break;
-                                case 1:
-                                    double d = br.ReadDouble();
-                                    bw.Write($"Нам пришёл double: {d}");
+                                case PacketsEnum.Login:
+                                    Console.WriteLine("Login from " + host);
+                                    string login = br.ReadString();
+                                    string password = br.ReadString();
+                                    if (login == "admin" && password == "pass")
+                                    {
+                                        isAuth = true;
+                                        //bw.Write((int)PacketsEnum.Login);
+                                        bw.Write(true);
+                                    }
+                                    else
+                                    {
+                                        //bw.Write((int)PacketsEnum.Login);
+                                        bw.Write(false);
+                                        client.Close();
+                                    }
                                     break;
-                                case 2:
-                                    bool b = br.ReadBoolean();
-                                    bw.Write($"Нам пришёл bool: {b}");
+                                case PacketsEnum.GetUniverse:
+                                    if (isAuth)
+                                    {
+                                        Console.WriteLine("Authorized request. Sending universe data.");
+                                        List<SectorModel> list = universe.Sectors.Values.ToList();
+                                        //bw.Write((int)PacketsEnum.GetUniverse);
+                                        bw.Write(list.Count);
+                                        foreach (var s in list)
+                                        {
+                                            s.WriteBinary(bw);
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Console.WriteLine("Non authorized request. Disconnecting client.");
+                                        client.Close();
+                                    }
                                     break;
                                 default:
-                                    bw.Write($"Нам пришёл левый пакет со значением: {packetId}");
+                                    bw.Write($"Нам пришёл левый пакет со значением: {(int)packet}");
                                     foreach (var c in clients)
                                     {
                                         if (c != this)
-                                            c.SendToClient($"Какой то мудак нам прислал херню со значением {packetId}");
+                                            c.SendToClient($"Какой то мудак нам прислал херню со значением {(int)packet}");
                                     }
                                     break;
                             }
@@ -68,7 +100,7 @@ namespace Server
                     }
                 }
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 try { client.Close(); }
                 catch { }

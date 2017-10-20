@@ -13,12 +13,12 @@ namespace Common
     {
         MarkovNameGenerator ng = new MarkovNameGenerator(Words.WordsCatalogue, 0, 5);
 
-        public Task GenerateUniverse(UniverseModel universe, int cycles, bool avoidDanger, double chanced)
+        public Task GenerateUniverse(UniverseModel universe, int cycles, bool avoidDanger, double chanced, int seed)
         {
             return Task.Run(() =>
             {
                 //PerlinNoise noise = new PerlinNoise(8973454);
-                FastBillow noise = new FastBillow(8973454);
+                FastBillow noise = new FastBillow(seed);
                 noise.NoiseQuality = NoiseQuality.High;
                 noise.OctaveCount = 6;
                 noise.Persistence = 0.6;
@@ -32,7 +32,7 @@ namespace Common
                 noise.Frequency = 0.05;*/
 
                 Voronoi biome = new Voronoi();
-                biome.Seed = 8973454;
+                biome.Seed = seed;
                 biome.Frequency = 0.8;
 
                 ng.Reset();
@@ -50,7 +50,7 @@ namespace Common
                 {
                     cycles = GenerateUniverse(universe, queue, cycles, chanced, noise, biome);
                 }
-                universe.Sectors.Values.AsParallel().ForAll(p => 
+                universe.Sectors.Values.AsParallel().ForAll(p =>
                 {
                     if (p.Position.X > universe.MaxX)
                         universe.MaxX = (int)p.Position.X;
@@ -62,6 +62,10 @@ namespace Common
                         universe.MinY = (int)p.Position.Y;
                 });
             });
+        }
+        public Task GenerateUniverse(UniverseModel universe, int cycles, bool avoidDanger, double chanced)
+        {
+            return GenerateUniverse(universe, cycles, avoidDanger, chanced, 8973454);
         }
 
 

@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AStar.cs" />
+    <Compile Include="Entities\PacketsEnum.cs" />
     <Compile Include="MarkovNameGenerator.cs" />
     <Compile Include="Models\DirectionEnum.cs" />
     <Compile Include="Models\RaceEnum.cs" />

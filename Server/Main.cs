@@ -1,5 +1,8 @@
-﻿using System;
+﻿using Common;
+using Common.Models;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -12,11 +15,40 @@ namespace Server
         TcpListener server;
         List<ClientHandler> clients;
         bool accept;
+        public UniverseModel Universe { get; set; }
+
+        UniverseLogic universe;
         public Main(int port)
         {
             clients = new List<ClientHandler>();
             server = new TcpListener(IPAddress.Any, port);
             accept = true;
+            universe = new UniverseLogic();
+        }
+
+        public void LoadUniverse()
+        {
+            Universe = new UniverseModel();
+            List<SectorModel> list = new List<SectorModel>();
+            using (BinaryReader br = new BinaryReader(File.Open("Universe.dat", FileMode.Open)))
+            {
+                int count = br.ReadInt32();
+                for (int i = 0; i < count; i++)
+                {
+                    list.Add(SectorModel.Create(br));
+                }
+            }
+            universe.MakeUniverseFromList(Universe, list);
+            Parallel.ForEach(list, (item) =>
+            {
+                item.SetLinks(Universe.Sectors);
+            });
+        }
+        public void GenerateNew()
+        {
+            Universe = new UniverseModel();
+            Random r = new Random();
+            universe.GenerateUniverse(Universe, 100000, true, 0.00d, r.Next()).Wait();
         }
 
         public void Listen()
@@ -30,14 +62,14 @@ namespace Server
                     if (clientTask.Result != null)
                     {
                         var client = clientTask.Result;
-                        client.Client.ReceiveTimeout = 10000;
+                        client.Client.ReceiveTimeout = 60000;
                         IPEndPoint clientIp = (IPEndPoint)client.Client.RemoteEndPoint;
                         Console.WriteLine($"Client connected from {clientIp.Address.ToString()} on port {clientIp.Port}");
-                        foreach(var cl in clients)
+                        foreach (var cl in clients)
                         {
                             cl.SendToClient($"К нам пришёл {clientIp.Address.ToString()} на порту {clientIp.Port}. Встречаем!");
                         }
-                        ClientHandler c = new ClientHandler(client, clients);
+                        ClientHandler c = new ClientHandler(client, clients, Universe);
                         clients.Add(c);
                     }
                 }
