@@ -68,7 +68,7 @@ namespace Common
         public Track(SectorModel currentNode, SectorModel targetNode)
         {
             Target = targetNode;
-            if (Target == null) throw new InvalidOperationException("You must specify a target Node for the Track class.");
+            //if (Target == null) throw new InvalidOperationException("You must specify a target Node for the Track class.");
             _Cost = 0;
             _NbArcsVisited = 0;
             Queue = null;
@@ -78,7 +78,7 @@ namespace Common
         public Track(Track PreviousTrack, SectorModel nextSector, bool ignoreWeight)
         {
             Target = PreviousTrack.Target;
-            if (Target == null) throw new InvalidOperationException("You must specify a target Node for the Track class.");
+            //if (Target == null) throw new InvalidOperationException("You must specify a target Node for the Track class.");
             Queue = PreviousTrack;
             _Cost = Queue.Cost + (!ignoreWeight ? nextSector.DangerLevel : 1);
             _NbArcsVisited = Queue._NbArcsVisited + 1;

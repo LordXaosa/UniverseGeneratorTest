@@ -45,12 +45,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AStar.cs" />
+    <Compile Include="AStarForDistance.cs" />
     <Compile Include="Entities\PacketsEnum.cs" />
     <Compile Include="MarkovNameGenerator.cs" />
     <Compile Include="Models\DirectionEnum.cs" />
     <Compile Include="Models\RaceEnum.cs" />
     <Compile Include="Models\UniverseModel.cs" />
     <Compile Include="NotifyPropertyChanged.cs" />
+    <Compile Include="Packets\GetUniversePacket.cs" />
+    <Compile Include="Packets\IPacket.cs" />
+    <Compile Include="Packets\LoginPacket.cs" />
+    <Compile Include="Packets\PingPacket.cs" />
     <Compile Include="PerlinNoise.cs" />
     <Compile Include="Point3D.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

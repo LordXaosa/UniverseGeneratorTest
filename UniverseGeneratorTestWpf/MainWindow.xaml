@@ -155,12 +155,18 @@
                         <RowDefinition Height="30"></RowDefinition>
                         <RowDefinition Height="30"></RowDefinition>
                         <RowDefinition Height="30"></RowDefinition>
+                        <RowDefinition Height="30"></RowDefinition>
+                        <RowDefinition Height="30"></RowDefinition>
+                        <RowDefinition Height="30"></RowDefinition>
                     </Grid.RowDefinitions>
                     <TextBlock Grid.Row="0" Text="Кол-во секторов:"></TextBlock>
                     <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding PathSectorsCount}"></TextBlock>
 
                     <CheckBox Grid.Row="1" Grid.ColumnSpan="2" Content="Кратчайший путь" IsChecked="{Binding SearchFastest}"/>
                     <Button Grid.Row="2" Grid.ColumnSpan="2" Content="Найти путь" Command="{Binding FindWay}"/>
+                    <TextBlock Grid.Row="3" Text="Радиус поиска:"></TextBlock>
+                    <TextBox Grid.Row="4" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding Radius}"></TextBox>
+                    <Button Grid.Row="5" Grid.ColumnSpan="2" Content="Найти окружающие" Command="{Binding FindRadius}"/>
                 </Grid>
             </GroupBox>
             <GroupBox Grid.Column="1" Grid.Row="2" Header="Генерация карты">

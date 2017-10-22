@@ -31,7 +31,7 @@ namespace Common
         ConcurrentDictionary<Track, Track> _open, _closed;
         Track _LeafToGoBackUp;
         int _NbIterations = -1;
-        ConcurrentDictionary<Point3D, SectorModel> _sectors;
+        //ConcurrentDictionary<Point3D, SectorModel> _sectors;
 
         public static double EuclidianDistance(SectorModel S1, SectorModel S2)
         {
@@ -112,11 +112,11 @@ namespace Common
         /// AStar Constructor.
         /// </summary>
         /// <param name="G">The graph on which AStar will perform the search.</param>
-        public AStar(ConcurrentDictionary<Point3D, SectorModel> sectors)
+        public AStar(int sectorsCount)//ConcurrentDictionary<Point3D, SectorModel> sectors)
         {
-            _sectors = sectors;
+            //_sectors = sectors;
             //_Open = new SortableList<Track>();
-            _Open = new FastPriorityQueue<Track>(sectors.Count);
+            _Open = new FastPriorityQueue<Track>(sectorsCount);
             _open = new ConcurrentDictionary<Track, Track>();
             _closed = new ConcurrentDictionary<Track, Track>();
             ChoosenHeuristic = EuclidianHeuristic;

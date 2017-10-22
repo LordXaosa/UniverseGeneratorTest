@@ -1,6 +1,7 @@
 ﻿using Common;
 using Common.Entities;
 using Common.Models;
+using Common.Packets;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,6 +20,7 @@ namespace UniverseGeneratorTestWpf.Helpers
         public bool IsAuth { get => _isAuth; set => _isAuth = value; }
         public delegate void PacketRecievedHandler(object sender, PacketEventArgs args);
         public event PacketRecievedHandler PacketRecieved;
+        public bool IsWaitingForData { get; set; }
         public TcpClientHelper(string hostname, int port)
         {
             client = new TcpClient(hostname, port);
@@ -48,9 +50,27 @@ namespace UniverseGeneratorTestWpf.Helpers
         {
             while (client.Connected)
             {
-                using (BinaryReader br = new BinaryReader(client.GetStream(), Encoding.UTF8, true))
+                if (client.Available > 0)
                 {
-                    PacketRecieved?.Invoke(this, new PacketEventArgs(br));
+                    using (BinaryReader br = new BinaryReader(client.GetStream(), Encoding.UTF8, true))
+                    {
+                        PacketsEnum packetType = (PacketsEnum)br.ReadInt32();
+                        IPacket packet = null;
+                        switch(packetType)
+                        {
+                            case PacketsEnum.Ping:
+                                packet = new PingPacket();
+                                break;
+                            case PacketsEnum.Login:
+                                packet = new LoginPacket(null,null);
+                                break;
+                            case PacketsEnum.GetUniverse:
+                                packet = new GetUniversePacket();
+                                break;
+                        }
+                        packet?.ReadPacket(br);
+                        PacketRecieved?.Invoke(this, new PacketEventArgs(packet));
+                    }
                 }
             }
         }

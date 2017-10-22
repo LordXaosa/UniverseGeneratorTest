@@ -1,5 +1,6 @@
 ﻿using Common.Entities;
 using Common.Models;
+using Common.Packets;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -30,9 +31,12 @@ namespace Server
         }
         public void SendToClient(string data)
         {
-            using (BinaryWriter bw = new BinaryWriter(client.GetStream(), Encoding.UTF8, true))
+            lock (this)
             {
-                bw.Write(data);
+                using (BinaryWriter bw = new BinaryWriter(client.GetStream(), Encoding.UTF8, true))
+                {
+                    bw.Write(data);
+                }
             }
         }
         void ProcessClient()
@@ -49,42 +53,43 @@ namespace Server
                             switch (packet)
                             {
                                 case PacketsEnum.Ping:
-                                    Console.WriteLine("Ping-pong from "+host);
-                                    bw.Write((int)PacketsEnum.Ping);//pong
+                                    Console.WriteLine("Ping-pong from " + host);
+                                    //bw.Write((int)PacketsEnum.Ping);//pong
+                                    PingPacket ping = new PingPacket();
+                                    ping.WritePacket(bw);
                                     break;
                                 case PacketsEnum.Login:
                                     Console.WriteLine("Login from " + host);
-                                    string login = br.ReadString();
-                                    string password = br.ReadString();
-                                    if (login == "admin" && password == "pass")
+                                    LoginPacket incomingLoginPacket = new LoginPacket();
+                                    incomingLoginPacket.ReadPacket(br);
+                                    LoginPacket outgoingLoginPacket = new LoginPacket();
+                                    if (incomingLoginPacket.Login == "admin" && incomingLoginPacket.Password == "pass")
                                     {
+                                        outgoingLoginPacket.IsAuth = true;
+                                        outgoingLoginPacket.WritePacket(bw);
                                         isAuth = true;
-                                        //bw.Write((int)PacketsEnum.Login);
-                                        bw.Write(true);
                                     }
                                     else
                                     {
-                                        //bw.Write((int)PacketsEnum.Login);
-                                        bw.Write(false);
+                                        outgoingLoginPacket.IsAuth = false;
+                                        outgoingLoginPacket.WritePacket(bw);
                                         client.Close();
                                     }
                                     break;
                                 case PacketsEnum.GetUniverse:
-                                    if (isAuth)
+                                    lock (this)
                                     {
-                                        Console.WriteLine("Authorized request. Sending universe data.");
-                                        List<SectorModel> list = universe.Sectors.Values.ToList();
-                                        //bw.Write((int)PacketsEnum.GetUniverse);
-                                        bw.Write(list.Count);
-                                        foreach (var s in list)
+                                        if (isAuth)
                                         {
-                                            s.WriteBinary(bw);
+                                            Console.WriteLine("Authorized request. Sending universe data.");
+                                            GetUniversePacket gup = new GetUniversePacket(universe.Sectors.Values.ToList());
+                                            gup.WritePacket(bw);
                                         }
-                                    }
-                                    else
-                                    {
-                                        Console.WriteLine("Non authorized request. Disconnecting client.");
-                                        client.Close();
+                                        else
+                                        {
+                                            Console.WriteLine("Non authorized request. Disconnecting client.");
+                                            client.Close();
+                                        }
                                     }
                                     break;
                                 default:

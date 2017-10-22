@@ -72,7 +72,7 @@ namespace Common
 
         public List<SectorModel> FindPath(UniverseModel universe, SectorModel start, SectorModel end, bool ignoreWeight)
         {
-            AStar a = new AStar(universe.Sectors);
+            AStar a = new AStar(universe.Sectors.Count);
             if (start != null && end != null)
             {
                 if (a.SearchPath(start, end, ignoreWeight))
@@ -81,6 +81,13 @@ namespace Common
                 }
             }
             return null;
+        }
+
+        public List<SectorModel> FindRadius(SectorModel start, int maxHops)
+        {
+            AStarForDistance a = new AStarForDistance();
+            a.FindSectors(start, maxHops);
+            return a.FoundSectors;
         }
 
         private double GetSector(PerlinNoise noise, int x, int y)

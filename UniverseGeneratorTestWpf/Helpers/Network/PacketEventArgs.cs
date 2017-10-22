@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Common.Packets;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,10 +10,10 @@ namespace UniverseGeneratorTestWpf.Helpers.Network
 {
     public class PacketEventArgs:EventArgs
     {
-        public BinaryReader Reader;
-        public PacketEventArgs(BinaryReader reader)
+        public IPacket Packet;
+        public PacketEventArgs(IPacket packet)
         {
-            Reader = reader;
+            Packet = packet;
         }
     }
 }
