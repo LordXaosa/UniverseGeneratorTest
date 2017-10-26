@@ -49,6 +49,8 @@
     <Compile Include="Entities\PacketsEnum.cs" />
     <Compile Include="MarkovNameGenerator.cs" />
     <Compile Include="Models\DirectionEnum.cs" />
+    <Compile Include="Models\ISerializableModel.cs" />
+    <Compile Include="Models\ItemModel.cs" />
     <Compile Include="Models\RaceEnum.cs" />
     <Compile Include="Models\UniverseModel.cs" />
     <Compile Include="NotifyPropertyChanged.cs" />

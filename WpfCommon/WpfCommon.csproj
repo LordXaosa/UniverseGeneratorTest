@@ -4,19 +4,17 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{2EDDABED-CF3D-486F-A97D-5CB7AC02BE00}</ProjectGuid>
-    <OutputType>WinExe</OutputType>
-    <RootNamespace>UniverseGeneratorTestWpf</RootNamespace>
-    <AssemblyName>UniverseGeneratorTestWpf</AssemblyName>
+    <ProjectGuid>{64A1B059-CE9A-4B1E-86E0-CCF9645CED7C}</ProjectGuid>
+    <OutputType>library</OutputType>
+    <RootNamespace>WpfCommon</RootNamespace>
+    <AssemblyName>WpfCommon</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -26,14 +24,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
-    <Optimize>false</Optimize>
+    <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -52,47 +48,8 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <ApplicationDefinition Include="App.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </ApplicationDefinition>
-    <Compile Include="Converters\DangerLevelToColorConverter.cs" />
-    <Compile Include="Converters\ItemNotNullToVisibilityConverter.cs" />
-    <Compile Include="Converters\MultiplierConverter.cs" />
-    <Compile Include="Converters\RaceToColorConverter.cs" />
-    <Compile Include="Helpers\GridLikeItemSource.cs" />
-    <Compile Include="Helpers\LinkedListExtensions.cs" />
-    <Compile Include="Helpers\MathExtensions.cs" />
-    <Compile Include="Helpers\Network\PacketEventArgs.cs" />
-    <Compile Include="Helpers\PriorityQuadTree.cs" />
-    <Compile Include="Helpers\PriorityQueue.cs" />
-    <Compile Include="Helpers\RectExtensions.cs" />
-    <Compile Include="Helpers\TcpClientHelper.cs" />
-    <Compile Include="Helpers\VirtualPanel.cs" />
-    <Compile Include="Views\Components\ZoomableCanvas.cs" />
-    <Compile Include="Views\Components\CanvasAutoSize.cs" />
-    <Compile Include="Views\SectorItemView.xaml.cs">
-      <DependentUpon>SectorItemView.xaml</DependentUpon>
-    </Compile>
-    <Page Include="MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Compile Include="App.xaml.cs">
-      <DependentUpon>App.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="ViewModels\MainViewModel.cs" />
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
-      <SubType>Code</SubType>
-    </Compile>
-    <Page Include="Views\SectorItemView.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
+    <Compile Include="Helpers\Command.cs" />
+    <Compile Include="Helpers\DialogCloser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -106,6 +63,15 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="ViewModels\ActiveViewModel.cs" />
+    <Compile Include="ViewModels\DialogViewModel.cs" />
+    <Compile Include="ViewModels\IActiveViewModel.cs" />
+    <Compile Include="ViewModels\TabViewModel.cs" />
+    <Compile Include="Views\Components\MultipleItemsListView.cs" />
+    <Compile Include="Views\Components\OutlinedTextBlock.cs" />
+    <Compile Include="Views\ProgressControl.xaml.cs">
+      <DependentUpon>ProgressControl.xaml</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -116,17 +82,16 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Common\Common.csproj">
-      <Project>{58FABB7B-1086-4EB5-9DBB-9192179C78E3}</Project>
+      <Project>{58fabb7b-1086-4eb5-9dbb-9192179c78e3}</Project>
       <Name>Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\WpfCommon\WpfCommon.csproj">
-      <Project>{64A1B059-CE9A-4B1E-86E0-CCF9645CED7C}</Project>
-      <Name>WpfCommon</Name>
-    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="Views\ProgressControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

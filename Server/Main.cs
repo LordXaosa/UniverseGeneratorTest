@@ -32,17 +32,8 @@ namespace Server
             List<SectorModel> list = new List<SectorModel>();
             using (BinaryReader br = new BinaryReader(File.Open("Universe.dat", FileMode.Open)))
             {
-                int count = br.ReadInt32();
-                for (int i = 0; i < count; i++)
-                {
-                    list.Add(SectorModel.Create(br));
-                }
+                Universe.ReadBinary(br);
             }
-            universe.MakeUniverseFromList(Universe, list);
-            Parallel.ForEach(list, (item) =>
-            {
-                item.SetLinks(Universe.Sectors);
-            });
         }
         public void GenerateNew()
         {

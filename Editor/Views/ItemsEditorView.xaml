@@ -1,0 +1,38 @@
+﻿<UserControl x:Class="Editor.Views.ItemsEditorView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Editor.Views"
+             xmlns:conv="clr-namespace:Editor.Converters">
+    <UserControl.Resources>
+        <Style TargetType="Button">
+            <Setter Property="Padding" Value="5"/>
+            <Setter Property="Margin" Value="5"/>
+        </Style>
+        <conv:ItemResourcesConverter x:Key="itemResourcesConverter"/>
+    </UserControl.Resources>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal">
+            <Button Content="Перезагрузить" Command="{Binding LoadData}"/>
+            <Button Content="Сохранить" Command="{Binding SaveData}"/>
+            <Button Content="Добавить" Command="{Binding AddItem}"/>
+            <Button Content="Изменить" Command="{Binding EditItem}"/>
+            <Button Content="Удалить" Command="{Binding DeleteItem}"/>
+        </StackPanel>
+        <ListView Grid.Row="1" ItemsSource="{Binding ItemsList}" SelectedItem="{Binding SelectedItem}">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="№" DisplayMemberBinding="{Binding Id}"/>
+                    <GridViewColumn Header="Название" DisplayMemberBinding="{Binding Name}"/>
+                    <GridViewColumn Header="Стоимость" DisplayMemberBinding="{Binding TotalCost}"/>
+                    <GridViewColumn Header="Ресурсы" DisplayMemberBinding="{Binding Resources, Converter={StaticResource itemResourcesConverter}}"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+    </Grid>
+</UserControl>

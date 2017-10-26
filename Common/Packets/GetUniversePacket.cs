@@ -11,27 +11,23 @@ namespace Common.Packets
 {
     public class GetUniversePacket : IPacket
     {
-        public List<SectorModel> Sectors { get; set; }
+        public UniverseModel Universe { get; set; }
         bool _isServer;
         public GetUniversePacket()
         {
             _isServer = false;
         }
-        public GetUniversePacket(List<SectorModel> sectors)
+        public GetUniversePacket(UniverseModel universe)
         {
-            Sectors = sectors;
+            Universe = universe;
             _isServer = true;
         }
         public void ReadPacket(BinaryReader br)
         {
             if (!_isServer)
             {
-                Sectors = new List<SectorModel>();
-                int count = br.ReadInt32();
-                for (int i = 0; i < count; i++)
-                {
-                    Sectors.Add(SectorModel.Create(br));
-                }
+                Universe = new UniverseModel();
+                Universe.ReadBinary(br);
             }
         }
 
@@ -40,16 +36,7 @@ namespace Common.Packets
             bw.Write((int)PacketsEnum.GetUniverse);
             if (_isServer)
             {
-                if (Sectors == null)
-                {
-                    bw.Write(0);
-                    return;
-                }
-                bw.Write(Sectors.Count);
-                foreach (SectorModel item in Sectors)
-                {
-                    item.WriteBinary(bw);
-                }
+                Universe.WriteBinary(bw);
             }
         }
     }

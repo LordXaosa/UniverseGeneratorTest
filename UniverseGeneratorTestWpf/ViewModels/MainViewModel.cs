@@ -15,10 +15,12 @@ using System.Windows;
 using System.Windows.Input;
 using UniverseGeneratorTestWpf.Helpers;
 using UniverseGeneratorTestWpf.Helpers.Network;
+using WpfCommon.Helpers;
+using WpfCommon.ViewModels;
 
 namespace UniverseGeneratorTestWpf.ViewModels
 {
-    public class MainViewModel : UserWaitableViewModel
+    public class MainViewModel : ActiveViewModel
     {
         UniverseLogic universe;
         DateTime lastPing = DateTime.Now;
@@ -245,23 +247,9 @@ namespace UniverseGeneratorTestWpf.ViewModels
                     client.IsAuth = lp.IsAuth;
                     break;
                 case GetUniversePacket gup:
-                    Universe = new UniverseModel();
-                    List<SectorModel> list = gup.Sectors;
-                    universe.MakeUniverseFromList(Universe, list);
-                    Parallel.ForEach(list, (item) =>
-                    {
-                        item.SetLinks(Universe.Sectors);
-                        if (item.Position.X > Universe.MaxX)
-                            Universe.MaxX = (int)item.Position.X;
-                        if (item.Position.Y > Universe.MaxY)
-                            Universe.MaxY = (int)item.Position.Y;
-                        if (item.Position.X < Universe.MinX)
-                            Universe.MinX = (int)item.Position.X;
-                        if (item.Position.Y < Universe.MinY)
-                            Universe.MinY = (int)item.Position.Y;
-                    });
+                    Universe = gup.Universe;
                     SetSectors();
-                    IsInProgress = false;
+                    OnProgress(false);
                     break;
                 default:
                     MessageBox.Show("Unknown packet type recieved.");
@@ -272,10 +260,10 @@ namespace UniverseGeneratorTestWpf.ViewModels
         async void GenerateUniverse()
         {
             Universe = new UniverseModel();
-            IsInProgress = true;
+            OnProgress(true);
             await universe.GenerateUniverse(Universe, Cycles, true, 0.00d);
             SetSectors();
-            IsInProgress = false;
+            OnProgress(false);
         }
 
         void SetSectors()
@@ -292,45 +280,37 @@ namespace UniverseGeneratorTestWpf.ViewModels
 
         async void FindWayCmd()
         {
-            IsInProgress = true;
-            await Task.Factory.StartNew(() =>
-            {
-                Universe.Sectors.AsParallel().ForAll(p => p.Value.IsRoute = false);
-                List<SectorModel> sectorsToHighlight = universe.FindPath(Universe, SelectedSectors[0], SelectedSectors[1], SearchFastest);
-                sectorsToHighlight.AsParallel().ForAll(p => p.IsRoute = true);
-                PathSectorsCount = sectorsToHighlight.Count;
-            });
-            IsInProgress = false;
+            await OnProgress(Task.Factory.StartNew(() =>
+                {
+                    Universe.Sectors.AsParallel().ForAll(p => p.Value.IsRoute = false);
+                    List<SectorModel> sectorsToHighlight = universe.FindPath(Universe, SelectedSectors[0], SelectedSectors[1], SearchFastest);
+                    sectorsToHighlight.AsParallel().ForAll(p => p.IsRoute = true);
+                    PathSectorsCount = sectorsToHighlight.Count;
+                })
+            );
         }
         async void FindRadiusCmd()
         {
-            IsInProgress = true;
-            await Task.Factory.StartNew(() =>
-            {
-                Universe.Sectors.AsParallel().ForAll(p => p.Value.IsRoute = false);
-                List<SectorModel> sectorsToHighlight = universe.FindRadius(SelectedSector, Radius);
-                sectorsToHighlight.AsParallel().ForAll(p => p.IsRoute = true);
-                PathSectorsCount = sectorsToHighlight.Count;
-            });
-            IsInProgress = false;
+            await OnProgress(Task.Factory.StartNew(() =>
+                {
+                    Universe.Sectors.AsParallel().ForAll(p => p.Value.IsRoute = false);
+                    List<SectorModel> sectorsToHighlight = universe.FindRadius(SelectedSector, Radius);
+                    sectorsToHighlight.AsParallel().ForAll(p => p.IsRoute = true);
+                    PathSectorsCount = sectorsToHighlight.Count;
+                })
+            );
         }
 
         async void Serialize()
         {
-            IsInProgress = true;
-            await Task.Factory.StartNew(() =>
-            {
-                List<SectorModel> list = Universe.Sectors.Values.ToList();
-                using (BinaryWriter bw = new BinaryWriter(File.Open("Universe.dat", FileMode.Create)))
+            await OnProgress(Task.Factory.StartNew(() =>
                 {
-                    bw.Write(list.Count);
-                    foreach (var s in list)
+                    using (BinaryWriter bw = new BinaryWriter(File.Open("Universe.dat", FileMode.Create)))
                     {
-                        s.WriteBinary(bw);
+                        Universe.WriteBinary(bw);
                     }
-                }
-            });
-            IsInProgress = false;
+                })
+            );
         }
         void Deserialize()
         {
@@ -338,7 +318,7 @@ namespace UniverseGeneratorTestWpf.ViewModels
             {
                 if (client.IsAuth)
                 {
-                    IsInProgress = true;
+                    OnProgress(true);
                     GetUniversePacket packet = new GetUniversePacket();
                     packet.WritePacket(client.GetWriter());
                 }

@@ -6,7 +6,7 @@ using System.Windows.Documents;
 using System.Windows.Markup;
 using System.Windows.Media;
 
-namespace UniverseGeneratorTestWpf.Views.Components
+namespace WpfCommon.Views.Components
 {
     [ContentProperty("Text")]
     public class OutlinedTextBlock : FrameworkElement

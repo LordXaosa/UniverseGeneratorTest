@@ -13,14 +13,14 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace UniverseGeneratorTestWpf.Views
+namespace Editor.Views
 {
     /// <summary>
-    /// Interaction logic for ProgressControl.xaml
+    /// Interaction logic for ItemsEditorView.xaml
     /// </summary>
-    public partial class ProgressControl : UserControl
+    public partial class ItemsEditorView : UserControl
     {
-        public ProgressControl()
+        public ItemsEditorView()
         {
             InitializeComponent();
         }

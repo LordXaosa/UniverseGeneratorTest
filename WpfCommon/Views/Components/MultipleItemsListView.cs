@@ -8,7 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 
-namespace UniverseGeneratorTestWpf.Views.Components
+namespace WpfCommon.Views.Components
 {
     public class MultipleItemsListView : ListView
     {

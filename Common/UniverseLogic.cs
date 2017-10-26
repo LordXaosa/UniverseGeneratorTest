@@ -257,15 +257,6 @@ namespace Common
             });
             return result;
         }
-
-        public void MakeUniverseFromList(UniverseModel universe, List<SectorModel> list)
-        {
-            universe.Sectors = new ConcurrentDictionary<Point3D, SectorModel>();
-            Parallel.ForEach(list, (item) =>
-             {
-                 universe.Sectors.TryAdd(item.Position, item);
-             });
-        }
     }
 }
 

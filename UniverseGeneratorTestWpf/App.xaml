@@ -5,6 +5,7 @@
              xmlns:conv="clr-namespace:UniverseGeneratorTestWpf.Converters"
              xmlns:system="clr-namespace:System;assembly=mscorlib"
              xmlns:components="clr-namespace:UniverseGeneratorTestWpf.Views.Components"
+             xmlns:wpfcommon="clr-namespace:WpfCommon.Views.Components;assembly=WpfCommon"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
         <conv:ItemNotNullToVisibilityConverter x:Key="itemNotNullToVisibilityConverter"/>
@@ -23,7 +24,7 @@
                     <Rectangle Canvas.Left="15" Canvas.Top="15" Stroke="Brown" StrokeThickness="4" HorizontalAlignment="Center" VerticalAlignment="Center" Width="20" Height="20" Visibility="{Binding IsRoute, Converter={StaticResource boolToVisibilityConverter}}"></Rectangle>
                 </Canvas>
                 <components:CanvasAutoSize HorizontalAlignment="Center" VerticalAlignment="Top">
-                    <components:OutlinedTextBlock Text="{Binding Name}" StrokeThickness="0.4" Fill="{Binding Race, Converter={StaticResource raceToColor}}" Stroke="LightGreen"/>
+                    <wpfcommon:OutlinedTextBlock Text="{Binding Name}" StrokeThickness="0.4" Fill="{Binding Race, Converter={StaticResource raceToColor}}" Stroke="LightGreen"/>
                 </components:CanvasAutoSize>
             </Grid>
         </ControlTemplate>

@@ -7,6 +7,8 @@
         xmlns:views="clr-namespace:UniverseGeneratorTestWpf.Views"
         xmlns:conv="clr-namespace:UniverseGeneratorTestWpf.Converters"
         xmlns:components="clr-namespace:UniverseGeneratorTestWpf.Views.Components"
+        xmlns:wpfcommon="clr-namespace:WpfCommon.Views.Components;assembly=WpfCommon"
+        xmlns:wpfcommonviews="clr-namespace:WpfCommon.Views;assembly=WpfCommon"
         Title="MainWindow" x:Name="Main" WindowState="Maximized">
     <Window.Resources>
         <conv:MultiplierConverter x:Key="mulConv"/>
@@ -23,21 +25,21 @@
                 <RowDefinition/>
                 <RowDefinition/>
             </Grid.RowDefinitions>
-            <components:MultipleItemsListView Grid.RowSpan="3" x:Name="MyListBox" ItemsSource="{Binding Sectors}" SelectedItem="{Binding SelectedSector, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" CustomSelectedItems="{Binding SelectedSectors, Mode=TwoWay}"  PreviewMouseMove="ZoomableCanvas_PreviewMouseMove" PreviewMouseWheel="ZoomableCanvas_PreviewMouseWheel">
+            <wpfcommon:MultipleItemsListView Grid.RowSpan="3" x:Name="MyListBox" ItemsSource="{Binding Sectors}" SelectedItem="{Binding SelectedSector, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" CustomSelectedItems="{Binding SelectedSectors, Mode=TwoWay}"  PreviewMouseMove="ZoomableCanvas_PreviewMouseMove" PreviewMouseWheel="ZoomableCanvas_PreviewMouseWheel">
                 <!--<components:MultipleItemsListView.ItemTemplate>
                     <DataTemplate>
                         <views:SectorItemView/>
                     </DataTemplate>
                 </components:MultipleItemsListView.ItemTemplate>-->
-                <components:MultipleItemsListView.ItemsPanel>
+                <wpfcommon:MultipleItemsListView.ItemsPanel>
                     <ItemsPanelTemplate>
                         <components:ZoomableCanvas RealizationLimit="5000"
                         RealizationRate="20"
                         RealizationPriority="Input"
                         Loaded="ZoomableCanvas_Loaded" KeyDown="ZoomableCanvas_KeyDown"/>
                     </ItemsPanelTemplate>
-                </components:MultipleItemsListView.ItemsPanel>
-                <components:MultipleItemsListView.ItemContainerStyle>
+                </wpfcommon:MultipleItemsListView.ItemsPanel>
+                <wpfcommon:MultipleItemsListView.ItemContainerStyle>
                     <Style TargetType="{x:Type ListViewItem}">
                         <Style.Triggers>
                             <Trigger Property="IsSelected" Value="True" >
@@ -114,8 +116,8 @@
                             </Setter.Value>
                         </Setter>
                     </Style>
-                </components:MultipleItemsListView.ItemContainerStyle>
-            </components:MultipleItemsListView>
+                </wpfcommon:MultipleItemsListView.ItemContainerStyle>
+            </wpfcommon:MultipleItemsListView>
             <GroupBox Grid.Column="1" Header="Информация о выбранном секторе">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -191,6 +193,6 @@
                 </Grid>
             </GroupBox>
         </Grid>
-        <views:ProgressControl/>
+        <wpfcommonviews:ProgressControl/>
     </Grid>
 </Window>

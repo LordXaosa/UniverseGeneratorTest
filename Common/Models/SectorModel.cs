@@ -7,7 +7,7 @@ using System.Security.Permissions;
 
 namespace Common.Models
 {
-    public class SectorModel : NotifyPropertyChanged
+    public class SectorModel : NotifyPropertyChanged, ISerializableModel
     {
         public SectorModel NorthGate { get; set; }
         public SectorModel SouthGate { get; set; }
@@ -47,6 +47,10 @@ namespace Common.Models
 
         public SectorModel()
         { }
+        public SectorModel(BinaryReader br)
+        {
+            ReadBinary(br);
+        }
         public SectorModel(Point3D position, string name, SectorModel north = null, SectorModel south = null, SectorModel west = null, SectorModel east = null)
         {
             Position = position;
@@ -104,41 +108,39 @@ namespace Common.Models
             }
         }
 
-        public static SectorModel Create(BinaryReader br)
+        public void ReadBinary(BinaryReader br)
         {
-            SectorModel s = new SectorModel();
-            s.Name = br.ReadString();
-            s.DangerLevel = br.ReadByte();
-            s.Race = (RaceEnum)br.ReadByte();
+            Name = br.ReadString();
+            DangerLevel = br.ReadByte();
+            Race = (RaceEnum)br.ReadByte();
             int x = br.ReadInt32();
             int y = br.ReadInt32();
-            s.Position = new Point3D(x, y, 0);
+            Position = new Point3D(x, y, 0);
             int flag = br.ReadByte();
             if (flag % 2 == 1)
             {
                 x = br.ReadInt32();
                 y = br.ReadInt32();
-                s._northGatePos = new Point3D(x, y, 0);
+                _northGatePos = new Point3D(x, y, 0);
             }
             if ((flag >> 1) % 2 == 1)
             {
                 x = br.ReadInt32();
                 y = br.ReadInt32();
-                s._southGatePos = new Point3D(x, y, 0);
+                _southGatePos = new Point3D(x, y, 0);
             }
             if ((flag >> 2) % 2 == 1)
             {
                 x = br.ReadInt32();
                 y = br.ReadInt32();
-                s._westGatePos = new Point3D(x, y, 0);
+                _westGatePos = new Point3D(x, y, 0);
             }
             if ((flag >> 3) % 2 == 1)
             {
                 x = br.ReadInt32();
                 y = br.ReadInt32();
-                s._eastGatePos = new Point3D(x, y, 0);
+                _eastGatePos = new Point3D(x, y, 0);
             }
-            return s;
         }
 
         public void SetLinks(ConcurrentDictionary<Point3D, SectorModel> universe)

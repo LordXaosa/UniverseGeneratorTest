@@ -82,7 +82,7 @@ namespace Server
                                         if (isAuth)
                                         {
                                             Console.WriteLine("Authorized request. Sending universe data.");
-                                            GetUniversePacket gup = new GetUniversePacket(universe.Sectors.Values.ToList());
+                                            GetUniversePacket gup = new GetUniversePacket(universe);
                                             gup.WritePacket(bw);
                                         }
                                         else
