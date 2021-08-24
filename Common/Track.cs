@@ -80,7 +80,7 @@ namespace Common
             Target = PreviousTrack.Target;
             //if (Target == null) throw new InvalidOperationException("You must specify a target Node for the Track class.");
             Queue = PreviousTrack;
-            _Cost = Queue.Cost + (!ignoreWeight ? nextSector.DangerLevel : 1);
+            _Cost = Queue.Cost + (!ignoreWeight ? Math.Pow(nextSector.DangerLevel, 2) : 1);
             _NbArcsVisited = Queue._NbArcsVisited + 1;
             EndSector = nextSector;
         }

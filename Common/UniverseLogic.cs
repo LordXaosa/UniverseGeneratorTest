@@ -50,7 +50,7 @@ namespace Common
                 {
                     cycles = GenerateUniverse(universe, queue, cycles, chanced, noise, biome);
                 }
-                universe.Sectors.Values.AsParallel().ForAll(p =>
+                universe.Sectors.Values.ToList().ForEach(p =>
                 {
                     if (p.Position.X > universe.MaxX)
                         universe.MaxX = (int)p.Position.X;
@@ -171,90 +171,125 @@ namespace Common
         private int GenerateUniverse(UniverseModel universe, ConcurrentQueue<SectorModel> queue, int cycles, double chanced, IModule noise, IModule biome)
         {
             int result = 0;
-            Parallel.For(0, queue.Count, (i) =>
+            //Parallel.For(0, queue.Count, (i) =>
+            for(int i = 0; i < queue.Count; i++)
             {
                 result = cycles--;
                 if (result <= 0)
-                    return;
+                    break;
                 SectorModel sector;
                 queue.TryDequeue(out sector);
-                var v = noise.GetValue(sector.X, 0, sector.Y - 1);
-                if (v > chanced)
+                var sectorChance = noise.GetValue(sector.X, 0, sector.Y);
+                var gateChance = 1.6d;
+                double v;
+                Point3D npos = new Point3D(sector.X, sector.Y - 1, 0);
+                //if (!universe.Sectors.ContainsKey(npos))
                 {
-                    Point3D npos = new Point3D(sector.X, sector.Y - 1, 0);
-                    SectorModel north = new SectorModel(npos, ng.GetName(sector.GetHashCode() ^ npos.GetHashCode()), south: sector);
-                    if (universe.Sectors.TryAdd(npos, north))
+                    v = noise.GetValue(sector.X, 0, sector.Y - 1);
+                    if (v > chanced)
                     {
-                        north.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
-                        RandomDangerLever(north);
-                        sector.NorthGate = north;
-                        queue.Enqueue(north);
-                    }
-                    else
-                    {
-                        north = universe.Sectors[npos];
-                        sector.NorthGate = north;
-                        north.SouthGate = sector;
+                        SectorModel north = new SectorModel(npos, ng.GetName(npos.GetHashCode()),
+                            south: sector);
+                        if (universe.Sectors.TryAdd(npos, north))
+                        {
+                            north.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
+                            RandomDangerLever(north);
+                            sector.NorthGate = north;
+                            queue.Enqueue(north);
+                        }
+                        else
+                        {
+                            if (sectorChance+v > gateChance)
+                            {
+                                north = universe.Sectors[npos];
+                                sector.NorthGate = north;
+                                north.SouthGate = sector;
+                            }
+                        }
                     }
                 }
-                v = noise.GetValue(sector.X, 0, sector.Y + 1);
-                if (v > chanced)
+
+                Point3D spos = new Point3D(sector.Position.X, sector.Position.Y + 1, 0);
+                //if (!universe.Sectors.ContainsKey(spos))
                 {
-                    Point3D spos = new Point3D(sector.Position.X, sector.Position.Y + 1, 0);
-                    SectorModel south = new SectorModel(spos, ng.GetName(sector.GetHashCode() ^ spos.GetHashCode()), north: sector);
-                    if (universe.Sectors.TryAdd(spos, south))
+                    v = noise.GetValue(sector.X, 0, sector.Y + 1);
+                    if (v > chanced)
                     {
-                        south.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
-                        RandomDangerLever(south);
-                        sector.SouthGate = south;
-                        queue.Enqueue(south);
-                    }
-                    else
-                    {
-                        south = universe.Sectors[spos];
-                        sector.SouthGate = south;
-                        south.NorthGate = sector;
+                        SectorModel south = new SectorModel(spos, ng.GetName(spos.GetHashCode()),
+                            north: sector);
+                        if (universe.Sectors.TryAdd(spos, south))
+                        {
+                            south.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
+                            RandomDangerLever(south);
+                            sector.SouthGate = south;
+                            queue.Enqueue(south);
+                        }
+                        else
+                        {
+                            if (sectorChance+v > gateChance)
+                            {
+                                south = universe.Sectors[spos];
+                                sector.SouthGate = south;
+                                south.NorthGate = sector;
+                            }
+                        }
                     }
                 }
-                v = noise.GetValue(sector.X - 1, 0, sector.Y);
-                if (v > chanced)
+
+                Point3D wpos = new Point3D(sector.Position.X - 1, sector.Position.Y, 0);
+                //if (!universe.Sectors.ContainsKey(wpos))
                 {
-                    Point3D wpos = new Point3D(sector.Position.X - 1, sector.Position.Y, 0);
-                    SectorModel west = new SectorModel(wpos, ng.GetName(sector.GetHashCode() ^ wpos.GetHashCode()), east: sector);
-                    if (universe.Sectors.TryAdd(wpos, west))
+                    v = noise.GetValue(sector.X - 1, 0, sector.Y);
+                    if (v > chanced)
                     {
-                        west.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
-                        RandomDangerLever(west);
-                        sector.WestGate = west;
-                        queue.Enqueue(west);
-                    }
-                    else
-                    {
-                        west = universe.Sectors[wpos];
-                        sector.WestGate = west;
-                        west.EastGate = sector;
+                        SectorModel west = new SectorModel(wpos, ng.GetName(wpos.GetHashCode()),
+                            east: sector);
+                        if (universe.Sectors.TryAdd(wpos, west))
+                        {
+                            west.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
+                            RandomDangerLever(west);
+                            sector.WestGate = west;
+                            queue.Enqueue(west);
+                        }
+                        else
+                        {
+                            if (sectorChance+v > gateChance)
+                            {
+                                west = universe.Sectors[wpos];
+                                sector.WestGate = west;
+                                west.EastGate = sector;
+                            }
+                        }
                     }
                 }
-                v = noise.GetValue(sector.X + 1, 0, sector.Y);
-                if (v > chanced)
+
+                Point3D epos = new Point3D(sector.Position.X + 1, sector.Position.Y, 0);
+                //if (!universe.Sectors.ContainsKey(epos))
                 {
-                    Point3D epos = new Point3D(sector.Position.X + 1, sector.Position.Y, 0);
-                    SectorModel east = new SectorModel(epos, ng.GetName(sector.GetHashCode() ^ epos.GetHashCode()), west: sector);
-                    if (universe.Sectors.TryAdd(epos, east))
+                    v = noise.GetValue(sector.X + 1, 0, sector.Y);
+                    if (v > chanced)
                     {
-                        east.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
-                        RandomDangerLever(east);
-                        sector.EastGate = east;
-                        queue.Enqueue(east);
-                    }
-                    else
-                    {
-                        east = universe.Sectors[epos];
-                        sector.EastGate = east;
-                        east.WestGate = sector;
+                        SectorModel east = new SectorModel(epos, ng.GetName(epos.GetHashCode()),
+                            west: sector);
+                        if (universe.Sectors.TryAdd(epos, east))
+                        {
+                            east.Race = GetRace(biome.GetValue(sector.X, 0, sector.Y - 1));
+                            RandomDangerLever(east);
+                            sector.EastGate = east;
+                            queue.Enqueue(east);
+                        }
+                        else
+                        {
+                            if (sectorChance+v > gateChance)
+                            {
+                                east = universe.Sectors[epos];
+                                sector.EastGate = east;
+                                east.WestGate = sector;
+                            }
+                        }
                     }
                 }
-            });
+            }//);
             return result;
         }
     }

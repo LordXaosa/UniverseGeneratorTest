@@ -65,7 +65,7 @@ namespace Common
         }
 
         /// <summary>
-        /// Heuristic based on the euclidian distance : Sqrt(Dx≤+Dy≤+Dz≤)
+        /// Heuristic based on the euclidian distance : Sqrt(Dx–Ü+Dy–Ü+Dz–Ü)
         /// </summary>
         public static Heuristic EuclidianHeuristic
         { get { return new Heuristic(EuclidianDistance); } }

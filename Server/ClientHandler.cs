@@ -45,63 +45,63 @@ namespace Server
             {
                 while (client.Connected)
                 {
-                    using (BinaryReader br = new BinaryReader(client.GetStream(), Encoding.UTF8, true))
+                    using var br = new BinaryReader(client.GetStream(), Encoding.UTF8, true);
+                    using var bw = new BinaryWriter(client.GetStream(), Encoding.UTF8, true);
+                    PacketsEnum packet = (PacketsEnum)br.ReadInt32();
+                    switch (packet)
                     {
-                        using (BinaryWriter bw = new BinaryWriter(client.GetStream(), Encoding.UTF8, true))
-                        {
-                            PacketsEnum packet = (PacketsEnum)br.ReadInt32();
-                            switch (packet)
+                        case PacketsEnum.Ping:
+                            Console.WriteLine("Ping-pong from " + host);
+                            //bw.Write((int)PacketsEnum.Ping);//pong
+                            PingPacket ping = new PingPacket();
+                            ping.WritePacket(bw);
+                            break;
+                        case PacketsEnum.Login:
+                            Console.WriteLine("Login from " + host);
+                            LoginPacket incomingLoginPacket = new LoginPacket();
+                            incomingLoginPacket.ReadPacket(br);
+                            LoginPacket outgoingLoginPacket = new LoginPacket();
+                            if (incomingLoginPacket.Login == "admin" && incomingLoginPacket.Password == "pass")
                             {
-                                case PacketsEnum.Ping:
-                                    Console.WriteLine("Ping-pong from " + host);
-                                    //bw.Write((int)PacketsEnum.Ping);//pong
-                                    PingPacket ping = new PingPacket();
-                                    ping.WritePacket(bw);
-                                    break;
-                                case PacketsEnum.Login:
-                                    Console.WriteLine("Login from " + host);
-                                    LoginPacket incomingLoginPacket = new LoginPacket();
-                                    incomingLoginPacket.ReadPacket(br);
-                                    LoginPacket outgoingLoginPacket = new LoginPacket();
-                                    if (incomingLoginPacket.Login == "admin" && incomingLoginPacket.Password == "pass")
-                                    {
-                                        outgoingLoginPacket.IsAuth = true;
-                                        outgoingLoginPacket.WritePacket(bw);
-                                        isAuth = true;
-                                    }
-                                    else
-                                    {
-                                        outgoingLoginPacket.IsAuth = false;
-                                        outgoingLoginPacket.WritePacket(bw);
-                                        client.Close();
-                                    }
-                                    break;
-                                case PacketsEnum.GetUniverse:
-                                    lock (this)
-                                    {
-                                        if (isAuth)
-                                        {
-                                            Console.WriteLine("Authorized request. Sending universe data.");
-                                            GetUniversePacket gup = new GetUniversePacket(universe);
-                                            gup.WritePacket(bw);
-                                        }
-                                        else
-                                        {
-                                            Console.WriteLine("Non authorized request. Disconnecting client.");
-                                            client.Close();
-                                        }
-                                    }
-                                    break;
-                                default:
-                                    bw.Write($"Нам пришёл левый пакет со значением: {(int)packet}");
-                                    foreach (var c in clients)
-                                    {
-                                        if (c != this)
-                                            c.SendToClient($"Какой то мудак нам прислал херню со значением {(int)packet}");
-                                    }
-                                    break;
+                                outgoingLoginPacket.IsAuth = true;
+                                outgoingLoginPacket.WritePacket(bw);
+                                isAuth = true;
                             }
-                        }
+                            else
+                            {
+                                outgoingLoginPacket.IsAuth = false;
+                                outgoingLoginPacket.WritePacket(bw);
+                                client.Close();
+                            }
+
+                            break;
+                        case PacketsEnum.GetUniverse:
+                            lock (this)
+                            {
+                                if (isAuth)
+                                {
+                                    Console.WriteLine("Authorized request. Sending universe data.");
+                                    GetUniversePacket gup = new GetUniversePacket(universe);
+                                    gup.WritePacket(bw);
+                                }
+                                else
+                                {
+                                    Console.WriteLine("Non authorized request. Disconnecting client.");
+                                    client.Close();
+                                }
+                            }
+
+                            break;
+                        default:
+                            bw.Write($"Нам пришёл левый пакет со значением: {(int) packet}");
+                            foreach (var c in clients)
+                            {
+                                if (c != this)
+                                    c.SendToClient(
+                                        $"Какой то мудак нам прислал херню со значением {(int) packet}");
+                            }
+
+                            break;
                     }
                 }
             }

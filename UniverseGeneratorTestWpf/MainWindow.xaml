@@ -35,7 +35,7 @@
                     <ItemsPanelTemplate>
                         <components:ZoomableCanvas RealizationLimit="5000"
                         RealizationRate="20"
-                        RealizationPriority="Input"
+                        RealizationPriority="Background"
                         Loaded="ZoomableCanvas_Loaded" KeyDown="ZoomableCanvas_KeyDown"/>
                     </ItemsPanelTemplate>
                 </wpfcommon:MultipleItemsListView.ItemsPanel>
@@ -183,6 +183,7 @@
                         <RowDefinition Height="30"></RowDefinition>
                         <RowDefinition Height="30"></RowDefinition>
                         <RowDefinition Height="30"></RowDefinition>
+                        <RowDefinition Height="30"></RowDefinition>
                     </Grid.RowDefinitions>
                     <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Text="Кол-во циклов генерации:"></TextBlock>
                     <TextBox Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding Cycles}"></TextBox>
@@ -190,6 +191,7 @@
                     <Button Grid.Row="2" Grid.ColumnSpan="2" Content="Сгенерировать карту" Command="{Binding GenerateMap}"/>
                     <Button Grid.Row="3" Grid.ColumnSpan="2" Content="Сохранить карту" Command="{Binding SerializeUniverse}"/>
                     <Button Grid.Row="4" Grid.ColumnSpan="2" Content="Загрузить карту" Command="{Binding DeserializeUniverse}"/>
+                    <TextBlock Grid.Row="5" Grid.ColumnSpan="2" Text="Кол-во секторов:"><Run Text="{Binding SectorsCount}"></Run></TextBlock>
                 </Grid>
             </GroupBox>
         </Grid>

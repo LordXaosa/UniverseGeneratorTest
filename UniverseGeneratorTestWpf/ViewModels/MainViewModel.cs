@@ -24,6 +24,16 @@ namespace UniverseGeneratorTestWpf.ViewModels
     {
         UniverseLogic universe;
         DateTime lastPing = DateTime.Now;
+        private int _sectorsCount;
+        public int SectorsCount
+        {
+            get => _sectorsCount;
+            set
+            {
+                _sectorsCount = value;
+                RaisePropertyChanged();
+            }
+        }
         int _minX;
         public int MinX
         {
@@ -196,30 +206,22 @@ namespace UniverseGeneratorTestWpf.ViewModels
             StartClient();
         }
 
-        async void StartClient()
+        async Task StartClient()
         {
-            await Task.Factory.StartNew(() =>
-            {
                 client = new TcpClientHelper("localhost", 5123);
                 client.PacketRecieved += Client_PacketRecieved;
-                NetworkQueue.Enqueue(Login);
+                Login();
+                //NetworkQueue.Enqueue(Login);
                 Task.Factory.StartNew(async () =>
                 {
                     while (true)
                     {
-                        NetworkQueue.Enqueue(SendPing);
+                        //NetworkQueue.Enqueue(SendPing);
+                        SendPing();
                         await Task.Delay(5000);
                     }
                 });
-                Task.Factory.StartNew(() =>
-                {
-                    while (true)
-                    {
-                        NetworkQueue.TryDequeue(out Action act);
-                        act?.Invoke();
-                    }
-                });
-            });
+
         }
 
         void SendPing()
@@ -274,8 +276,11 @@ namespace UniverseGeneratorTestWpf.ViewModels
             MaxY = Universe.MaxY;
             TotalX = -MinX + MaxX + 1;
             TotalY = -MinY + MaxY + 1;
+            Universe.Sectors.TryGetValue(new Point3D(0,0,0), out var sector);
+            sector.IsRevealed = true;
             Sectors = new GridLikeItemsSource(Universe.Sectors.Values.ToList(), MinX, MinY, MaxX, MaxY, 50);
             Sectors.Count = Universe.Sectors.Count;
+            SectorsCount = Sectors.Count;
         }
 
         async void FindWayCmd()
@@ -314,15 +319,15 @@ namespace UniverseGeneratorTestWpf.ViewModels
         }
         void Deserialize()
         {
-            NetworkQueue.Enqueue(() =>
-            {
+            //NetworkQueue.Enqueue(() =>
+            //{
                 if (client.IsAuth)
                 {
                     OnProgress(true);
                     GetUniversePacket packet = new GetUniversePacket();
                     packet.WritePacket(client.GetWriter());
                 }
-            });
+            //});
         }
     }
 }

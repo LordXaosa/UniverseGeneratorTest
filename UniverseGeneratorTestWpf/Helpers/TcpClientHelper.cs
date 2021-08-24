@@ -33,45 +33,37 @@ namespace UniverseGeneratorTestWpf.Helpers
                 bw.Write(data);
             }
         }
-
-        public void SetAuth(bool isAuth)
-        {
-            _isAuth = isAuth;
-        }
         public BinaryWriter GetWriter()
         {
-            return new BinaryWriter(client.GetStream(), Encoding.UTF8, true);
+            return new(client.GetStream(), Encoding.UTF8, true);
         }
         public BinaryReader GetReader()
         {
-            return new BinaryReader(client.GetStream(), Encoding.UTF8, true);
+            return new (client.GetStream(), Encoding.UTF8, true);
         }
-        void ProcessClient()
+
+        async Task ProcessClient()
         {
             while (client.Connected)
             {
-                if (client.Available > 0)
+                using var br = GetReader();
+                PacketsEnum packetType = (PacketsEnum) br.ReadInt32();
+                IPacket packet = null;
+                switch (packetType)
                 {
-                    using (BinaryReader br = new BinaryReader(client.GetStream(), Encoding.UTF8, true))
-                    {
-                        PacketsEnum packetType = (PacketsEnum)br.ReadInt32();
-                        IPacket packet = null;
-                        switch(packetType)
-                        {
-                            case PacketsEnum.Ping:
-                                packet = new PingPacket();
-                                break;
-                            case PacketsEnum.Login:
-                                packet = new LoginPacket(null,null);
-                                break;
-                            case PacketsEnum.GetUniverse:
-                                packet = new GetUniversePacket();
-                                break;
-                        }
-                        packet?.ReadPacket(br);
-                        PacketRecieved?.Invoke(this, new PacketEventArgs(packet));
-                    }
+                    case PacketsEnum.Ping:
+                        packet = new PingPacket();
+                        break;
+                    case PacketsEnum.Login:
+                        packet = new LoginPacket(null, null);
+                        break;
+                    case PacketsEnum.GetUniverse:
+                        packet = new GetUniversePacket();
+                        break;
                 }
+
+                packet?.ReadPacket(br);
+                PacketRecieved?.Invoke(this, new PacketEventArgs(packet));
             }
         }
     }
