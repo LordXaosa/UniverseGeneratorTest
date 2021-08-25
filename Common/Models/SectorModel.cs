@@ -1,43 +1,28 @@
-﻿
-using System;
-using System.Collections.Concurrent;
-using System.IO;
-using System.Runtime.Serialization;
-using System.Security.Permissions;
+﻿using System.IO;
+using Common.Entities.Pathfinding;
 
 namespace Common.Models
 {
     public class SectorModel : NotifyPropertyChanged, ISerializableModel
     {
-        public SectorModel NorthGate { get; set; }
-        public SectorModel SouthGate { get; set; }
-        public SectorModel EastGate { get; set; }
-        public SectorModel WestGate { get; set; }
-        private Point3D _northGatePos;
-        private Point3D _southGatePos;
-        private Point3D _westGatePos;
-        private Point3D _eastGatePos;
-        public int X { get { return (int)Position.X; } }
-        public int Y { get { return (int)Position.Y; } }
-        public Point3D Position { get; set; }
-        public int DangerLevel { get; set; }
-        public string Name { get; set; }
-        public RaceEnum Race { get; set; }
+        public SectorGraphNode Node { get; private set; }
+        
         private bool _isRoute;
         public bool IsRoute
         {
-            get { return _isRoute; }
+            get => _isRoute;
             set
             {
                 _isRoute = value;
                 RaisePropertyChanged();
             }
         }
-
+        public string Name { get; set; } 
+        public RaceEnum Race { get; set; }
         private bool _isRevealed;
         public bool IsRevealed
         {
-            get { return _isRevealed; }
+            get => _isRevealed;
             set
             {
                 _isRevealed = value;
@@ -45,132 +30,84 @@ namespace Common.Models
             }
         }
 
-        public SectorModel()
-        { }
         public SectorModel(BinaryReader br)
         {
             ReadBinary(br);
         }
-        public SectorModel(Point3D position, string name, SectorModel north = null, SectorModel south = null, SectorModel west = null, SectorModel east = null)
+
+        public SectorModel(string name, SectorGraphNode node)
         {
-            Position = position;
             Name = name;
-            NorthGate = north;
-            SouthGate = south;
-            WestGate = west;
-            EastGate = east;
+            Node = node;
         }
-
-        public override int GetHashCode()
-        {
-            return Position.GetHashCode();
-        }
-
-        public override bool Equals(object obj)
-        {
-            SectorModel s = obj as SectorModel;
-            if (s == null) return false;
-            return Position.Equals(s.Position);
-        }
-
         public void WriteBinary(BinaryWriter bw)
         {
             bw.Write(Name);
-            bw.Write((byte)DangerLevel);
+            bw.Write((int)Node.Position.X);
+            bw.Write((int)Node.Position.Y);
+            bw.Write((byte)Node.DangerLevel);
             bw.Write((byte)Race);
-            bw.Write((int)Position.X);
-            bw.Write((int)Position.Y);
             int flag = 0;
-            flag = NorthGate != null ? 1 : 0;
-            flag = flag + (SouthGate != null ? 1 << 1 : 0 << 1);
-            flag = flag + (WestGate != null ? 1 << 2 : 0 << 2);
-            flag = flag + (EastGate != null ? 1 << 3 : 0 << 3);
+            flag = Node.NorthGate != null ? 1 : 0;
+            flag = flag + (Node.SouthGate != null ? 1 << 1 : 0 << 1);
+            flag = flag + (Node.WestGate != null ? 1 << 2 : 0 << 2);
+            flag = flag + (Node.EastGate != null ? 1 << 3 : 0 << 3);
             bw.Write((byte)flag);
-            if (NorthGate != null)
+            if (Node.NorthGate != null)
             {
-                bw.Write((int)NorthGate.Position.X);
-                bw.Write((int)NorthGate.Position.Y);
+                bw.Write((int)Node.NorthGate.Position.X);
+                bw.Write((int)Node.NorthGate.Position.Y);
             }
-            if (SouthGate != null)
+            if (Node.SouthGate != null)
             {
-                bw.Write((int)SouthGate.Position.X);
-                bw.Write((int)SouthGate.Position.Y);
+                bw.Write((int)Node.SouthGate.Position.X);
+                bw.Write((int)Node.SouthGate.Position.Y);
             }
-            if (WestGate != null)
+            if (Node.WestGate != null)
             {
-                bw.Write((int)WestGate.Position.X);
-                bw.Write((int)WestGate.Position.Y);
+                bw.Write((int)Node.WestGate.Position.X);
+                bw.Write((int)Node.WestGate.Position.Y);
             }
-            if (EastGate != null)
+            if (Node.EastGate != null)
             {
-                bw.Write((int)EastGate.Position.X);
-                bw.Write((int)EastGate.Position.Y);
+                bw.Write((int)Node.EastGate.Position.X);
+                bw.Write((int)Node.EastGate.Position.Y);
             }
         }
 
         public void ReadBinary(BinaryReader br)
         {
             Name = br.ReadString();
-            DangerLevel = br.ReadByte();
-            Race = (RaceEnum)br.ReadByte();
             int x = br.ReadInt32();
             int y = br.ReadInt32();
-            Position = new Point3D(x, y, 0);
+            Node = new SectorGraphNode(new Point2D(x, y));
+            Node.DangerLevel = br.ReadByte();
+            Race = (RaceEnum)br.ReadByte();
             int flag = br.ReadByte();
             if (flag % 2 == 1)
             {
                 x = br.ReadInt32();
                 y = br.ReadInt32();
-                _northGatePos = new Point3D(x, y, 0);
+                Node.NorthGatePos = new Point2D(x, y);
             }
             if ((flag >> 1) % 2 == 1)
             {
                 x = br.ReadInt32();
                 y = br.ReadInt32();
-                _southGatePos = new Point3D(x, y, 0);
+                Node.SouthGatePos = new Point2D(x, y);
             }
             if ((flag >> 2) % 2 == 1)
             {
                 x = br.ReadInt32();
                 y = br.ReadInt32();
-                _westGatePos = new Point3D(x, y, 0);
+                Node.WestGatePos = new Point2D(x, y);
             }
             if ((flag >> 3) % 2 == 1)
             {
                 x = br.ReadInt32();
                 y = br.ReadInt32();
-                _eastGatePos = new Point3D(x, y, 0);
-            }
-        }
-
-        public void SetLinks(ConcurrentDictionary<Point3D, SectorModel> universe)
-        {
-            SectorModel other;
-            if (_northGatePos != null)
-            {
-                other = universe[_northGatePos];
-                NorthGate = other;
-                other.SouthGate = this;
-            }
-            if (_southGatePos != null)
-            {
-                other = universe[_southGatePos];
-                SouthGate = other;
-                other.NorthGate = this;
-            }
-            if (_westGatePos != null)
-            {
-                other = universe[_westGatePos];
-                WestGate = other;
-                other.EastGate = this;
-            }
-            if (_eastGatePos != null)
-            {
-                other = universe[_eastGatePos];
-                EastGate = other;
-                other.WestGate = this;
+                Node.EastGatePos = new Point2D(x, y);
             }
         }
     }
-
 }

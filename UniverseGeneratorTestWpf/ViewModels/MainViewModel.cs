@@ -13,6 +13,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using Common.Entities.Pathfinding;
 using UniverseGeneratorTestWpf.Helpers;
 using UniverseGeneratorTestWpf.Helpers.Network;
 using WpfCommon.Helpers;
@@ -25,6 +26,7 @@ namespace UniverseGeneratorTestWpf.ViewModels
         UniverseLogic universe;
         DateTime lastPing = DateTime.Now;
         private int _sectorsCount;
+
         public int SectorsCount
         {
             get => _sectorsCount;
@@ -34,7 +36,9 @@ namespace UniverseGeneratorTestWpf.ViewModels
                 RaisePropertyChanged();
             }
         }
+
         int _minX;
+
         public int MinX
         {
             get { return _minX; }
@@ -44,7 +48,9 @@ namespace UniverseGeneratorTestWpf.ViewModels
                 RaisePropertyChanged();
             }
         }
+
         int _minY;
+
         public int MinY
         {
             get { return _minY; }
@@ -54,7 +60,9 @@ namespace UniverseGeneratorTestWpf.ViewModels
                 RaisePropertyChanged();
             }
         }
+
         int _maxX;
+
         public int MaxX
         {
             get { return _maxX; }
@@ -64,7 +72,9 @@ namespace UniverseGeneratorTestWpf.ViewModels
                 RaisePropertyChanged();
             }
         }
+
         int _maxY;
+
         public int MaxY
         {
             get { return _maxY; }
@@ -76,6 +86,7 @@ namespace UniverseGeneratorTestWpf.ViewModels
         }
 
         int _totalX;
+
         public int TotalX
         {
             get { return _totalX; }
@@ -87,6 +98,7 @@ namespace UniverseGeneratorTestWpf.ViewModels
         }
 
         int _totalY;
+
         public int TotalY
         {
             get { return _totalY; }
@@ -98,6 +110,7 @@ namespace UniverseGeneratorTestWpf.ViewModels
         }
 
         bool _searchFastest;
+
         public bool SearchFastest
         {
             get { return _searchFastest; }
@@ -109,6 +122,7 @@ namespace UniverseGeneratorTestWpf.ViewModels
         }
 
         private GridLikeItemsSource _sectors;
+
         public GridLikeItemsSource Sectors
         {
             get { return _sectors; }
@@ -120,6 +134,7 @@ namespace UniverseGeneratorTestWpf.ViewModels
         }
 
         private SectorModel _selectedSector;
+
         public SectorModel SelectedSector
         {
             get { return _selectedSector; }
@@ -131,6 +146,7 @@ namespace UniverseGeneratorTestWpf.ViewModels
         }
 
         private List<SectorModel> _selectedSectors;
+
         public List<SectorModel> SelectedSectors
         {
             get { return _selectedSectors; }
@@ -142,6 +158,7 @@ namespace UniverseGeneratorTestWpf.ViewModels
         }
 
         private int _pathSectorsCount;
+
         public int PathSectorsCount
         {
             get { return _pathSectorsCount; }
@@ -153,6 +170,7 @@ namespace UniverseGeneratorTestWpf.ViewModels
         }
 
         private int _cycles;
+
         public int Cycles
         {
             get { return _cycles; }
@@ -164,6 +182,7 @@ namespace UniverseGeneratorTestWpf.ViewModels
         }
 
         private UniverseModel _universe;
+
         public UniverseModel Universe
         {
             get { return _universe; }
@@ -175,6 +194,7 @@ namespace UniverseGeneratorTestWpf.ViewModels
         }
 
         int _radius;
+
         public int Radius
         {
             get { return _radius; }
@@ -206,22 +226,21 @@ namespace UniverseGeneratorTestWpf.ViewModels
             StartClient();
         }
 
-        async Task StartClient()
+        async void StartClient()
         {
-                client = new TcpClientHelper("localhost", 5123);
-                client.PacketRecieved += Client_PacketRecieved;
-                Login();
-                //NetworkQueue.Enqueue(Login);
-                Task.Factory.StartNew(async () =>
+            client = new TcpClientHelper("localhost", 5123);
+            client.PacketRecieved += Client_PacketRecieved;
+            Login();
+            //NetworkQueue.Enqueue(Login);
+            Task.Factory.StartNew(async () =>
+            {
+                while (true)
                 {
-                    while (true)
-                    {
-                        //NetworkQueue.Enqueue(SendPing);
-                        SendPing();
-                        await Task.Delay(5000);
-                    }
-                });
-
+                    //NetworkQueue.Enqueue(SendPing);
+                    SendPing();
+                    await Task.Delay(5000);
+                }
+            });
         }
 
         void SendPing()
@@ -232,6 +251,7 @@ namespace UniverseGeneratorTestWpf.ViewModels
             PingPacket p = new PingPacket();
             p.WritePacket(client.GetWriter());
         }
+
         void Login()
         {
             LoginPacket login = new LoginPacket("admin", "pass");
@@ -240,7 +260,7 @@ namespace UniverseGeneratorTestWpf.ViewModels
 
         private void Client_PacketRecieved(object sender, PacketEventArgs args)
         {
-            TcpClientHelper c = (TcpClientHelper)sender;
+            TcpClientHelper c = (TcpClientHelper) sender;
             switch (args.Packet)
             {
                 case PingPacket p:
@@ -276,7 +296,7 @@ namespace UniverseGeneratorTestWpf.ViewModels
             MaxY = Universe.MaxY;
             TotalX = -MinX + MaxX + 1;
             TotalY = -MinY + MaxY + 1;
-            Universe.Sectors.TryGetValue(new Point3D(0,0,0), out var sector);
+            Universe.Sectors.TryGetValue(new Point2D(0, 0), out var sector);
             sector.IsRevealed = true;
             Sectors = new GridLikeItemsSource(Universe.Sectors.Values.ToList(), MinX, MinY, MaxX, MaxY, 50);
             Sectors.Count = Universe.Sectors.Count;
@@ -288,19 +308,21 @@ namespace UniverseGeneratorTestWpf.ViewModels
             await OnProgress(Task.Factory.StartNew(() =>
                 {
                     Universe.Sectors.AsParallel().ForAll(p => p.Value.IsRoute = false);
-                    List<SectorModel> sectorsToHighlight = universe.FindPath(Universe, SelectedSectors[0], SelectedSectors[1], SearchFastest);
-                    sectorsToHighlight.AsParallel().ForAll(p => p.IsRoute = true);
+                    List<SectorGraphNode> sectorsToHighlight = universe.FindPath(Universe, SelectedSectors[0].Node,
+                        SelectedSectors[1].Node, SearchFastest);
+                    sectorsToHighlight.AsParallel().ForAll(p => Universe.Sectors[p.Position].IsRoute = true);
                     PathSectorsCount = sectorsToHighlight.Count;
                 })
             );
         }
+
         async void FindRadiusCmd()
         {
             await OnProgress(Task.Factory.StartNew(() =>
                 {
                     Universe.Sectors.AsParallel().ForAll(p => p.Value.IsRoute = false);
-                    List<SectorModel> sectorsToHighlight = universe.FindRadius(SelectedSector, Radius);
-                    sectorsToHighlight.AsParallel().ForAll(p => p.IsRoute = true);
+                    List<SectorGraphNode> sectorsToHighlight = universe.FindRadius(SelectedSector.Node, Radius);
+                    sectorsToHighlight.AsParallel().ForAll(p => Universe.Sectors[p.Position].IsRoute = true);
                     PathSectorsCount = sectorsToHighlight.Count;
                 })
             );
@@ -317,16 +339,17 @@ namespace UniverseGeneratorTestWpf.ViewModels
                 })
             );
         }
+
         void Deserialize()
         {
             //NetworkQueue.Enqueue(() =>
             //{
-                if (client.IsAuth)
-                {
-                    OnProgress(true);
-                    GetUniversePacket packet = new GetUniversePacket();
-                    packet.WritePacket(client.GetWriter());
-                }
+            if (client.IsAuth)
+            {
+                OnProgress(true);
+                GetUniversePacket packet = new GetUniversePacket();
+                packet.WritePacket(client.GetWriter());
+            }
             //});
         }
     }

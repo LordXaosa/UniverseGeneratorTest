@@ -70,16 +70,16 @@ namespace UniverseGeneratorTestWpf
 
         private void ZoomableCanvas_KeyDown(object sender, KeyEventArgs e)
         {
-            MainViewModel mvm = (MainViewModel)DataContext;
+            /*MainViewModel mvm = (MainViewModel)DataContext;
             if (mvm.SelectedSector != null)
             {
                 if (e.Key == Key.Up)
                 {
-                    if (mvm.SelectedSector.NorthGate == null)
+                    if (mvm.SelectedSector.Node.NorthGate == null)
                         e.Handled = true;
-                    if (mvm.SelectedSector.NorthGate != null && !mvm.SelectedSector.NorthGate.IsRevealed)
+                    if (mvm.SelectedSector.Node.NorthGate != null && !mvm.SelectedSector.NorthGate.IsRevealed)
                     {
-                        mvm.SelectedSector.NorthGate.IsRevealed = true;
+                        mvm.SelectedSector.Node.NorthGate.IsRevealed = true;
                         e.Handled = true;
                     }
                 }
@@ -113,7 +113,7 @@ namespace UniverseGeneratorTestWpf
                         e.Handled = true;
                     }
                 }
-            }
+            }*/
         }
     }
 }

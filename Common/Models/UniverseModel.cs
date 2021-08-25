@@ -5,12 +5,13 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Common.Entities.Pathfinding;
 
 namespace Common.Models
 {
     public class UniverseModel:ISerializableModel
     {
-        public ConcurrentDictionary<Point3D, SectorModel> Sectors { get; set; }
+        public ConcurrentDictionary<Point2D, SectorModel> Sectors { get; set; }
         public int MaxY { get; set; }
         public int MaxX { get; set; }
         public int MinY { get; set; }
@@ -18,7 +19,7 @@ namespace Common.Models
 
         public UniverseModel()
         {
-            Sectors = new ConcurrentDictionary<Point3D, SectorModel>();
+            Sectors = new ConcurrentDictionary<Point2D, SectorModel>();
         }
 
         public void WriteBinary(BinaryWriter bw)
@@ -41,15 +42,44 @@ namespace Common.Models
             MinX = br.ReadInt32();
             MinY = br.ReadInt32();
             int count = br.ReadInt32();
-            Sectors = new ConcurrentDictionary<Point3D, SectorModel>();
+            Sectors = new ConcurrentDictionary<Point2D, SectorModel>();
             for (int i = 0; i<count;i++)
             {
                 SectorModel s = new SectorModel(br);
-                Sectors.TryAdd(s.Position, s);
+                Sectors.TryAdd(s.Node.Position, s);
             }
             foreach(var item in Sectors)
             {
-                item.Value.SetLinks(Sectors);
+                SetLinks(item.Value, Sectors);
+            }
+        }
+        
+        public void SetLinks(SectorModel sector, ConcurrentDictionary<Point2D, SectorModel> universe)
+        {
+            SectorModel other;
+            if (sector.Node.NorthGatePos != null)
+            {
+                other = universe[sector.Node.NorthGatePos];
+                sector.Node.NorthGate = other.Node;
+                other.Node.SouthGate = sector.Node;
+            }
+            if (sector.Node.SouthGatePos != null)
+            {
+                other = universe[sector.Node.SouthGatePos];
+                sector.Node.SouthGate = other.Node;
+                other.Node.NorthGate = sector.Node;
+            }
+            if (sector.Node.WestGatePos != null)
+            {
+                other = universe[sector.Node.WestGatePos];
+                sector.Node.WestGate = other.Node;
+                other.Node.EastGate = sector.Node;
+            }
+            if (sector.Node.EastGatePos != null)
+            {
+                other = universe[sector.Node.EastGatePos];
+                sector.Node.EastGate = other.Node;
+                other.Node.WestGate = sector.Node;
             }
         }
     }

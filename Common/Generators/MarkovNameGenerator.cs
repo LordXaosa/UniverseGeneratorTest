@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Common
+namespace Common.Generators
 {
     //Generates random names based on the statistical weight of letter sequences
     //in a collection of sample names

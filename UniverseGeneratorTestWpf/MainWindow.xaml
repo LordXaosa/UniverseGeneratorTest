@@ -60,7 +60,7 @@
                         <Setter Property="Canvas.Left">
                             <Setter.Value>
                                 <MultiBinding Converter="{StaticResource mulConv}" ConverterParameter="{StaticResource Multiplier}">
-                                    <Binding Path="X"/>
+                                    <Binding Path="Node.X"/>
                                     <Binding Path="DataContext.MinX" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=Window}"/>
                                 </MultiBinding>
                             </Setter.Value>
@@ -68,7 +68,7 @@
                         <Setter Property="Canvas.Top">
                             <Setter.Value>
                                 <MultiBinding Converter="{StaticResource mulConv}" ConverterParameter="{StaticResource Multiplier}">
-                                    <Binding Path="Y"/>
+                                    <Binding Path="Node.Y"/>
                                     <Binding Path="DataContext.MinY" RelativeSource="{RelativeSource Mode=FindAncestor, AncestorType=Window}"/>
                                 </MultiBinding>
                             </Setter.Value>
@@ -135,16 +135,16 @@
                     <TextBlock Grid.Column="1" Text="{Binding SelectedSector.Name}"></TextBlock>
 
                     <TextBlock Grid.Row="1" Text="X:"></TextBlock>
-                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedSector.X}"></TextBlock>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedSector.Node.X}"></TextBlock>
 
                     <TextBlock Grid.Row="2" Text="Y:"></TextBlock>
-                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedSector.Y}"></TextBlock>
+                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedSector.Node.Y}"></TextBlock>
 
                     <TextBlock Grid.Row="3" Text="Раса:"></TextBlock>
                     <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedSector.Race}"></TextBlock>
 
                     <TextBlock Grid.Row="4" Text="Уровень опасности:"></TextBlock>
-                    <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedSector.DangerLevel}"></TextBlock>
+                    <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedSector.Node.DangerLevel}"></TextBlock>
                 </Grid>
             </GroupBox>
             <GroupBox Grid.Column="1" Grid.Row="1" Header="Поиск пути">

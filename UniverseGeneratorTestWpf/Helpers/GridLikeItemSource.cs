@@ -56,13 +56,14 @@ namespace UniverseGeneratorTestWpf.Helpers
             //List<int> result = new List<int>();
             ConcurrentBag<int> result = new ConcurrentBag<int>();
 
-            Parallel.For(0, list.Count, (i) =>
+            //Parallel.For(0, list.Count, (i) =>
+            for (int i = 0; i < list.Count; i++)
             {
-                int x = -_minX + list[i].X;
-                int y = -_minY + list[i].Y;
+                int x = -_minX + list[i].Node.X;
+                int y = -_minY + list[i].Node.Y;
                 if (x > left && x < right && y > top && y < bottom)
                     result.Add(i);
-            });
+            }
             return result;
             /*for(int i = 0; i < list.Count; i++)
             {

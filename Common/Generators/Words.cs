@@ -1,4 +1,4 @@
-﻿namespace Common
+﻿namespace Common.Generators
 {
     public class Words
     {

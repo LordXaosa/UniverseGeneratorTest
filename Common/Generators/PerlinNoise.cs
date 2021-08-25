@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Common
+namespace Common.Generators
 {
 
     /* Perlin noise class.  ( by Tom Nuydens (tom@delphi3d.net) )
